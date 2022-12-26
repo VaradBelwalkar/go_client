@@ -51,27 +51,6 @@ import (
 
 
 
-
-
-									//Understand how CSRF works
-
-
-//First we make get request to the /login page to the server, then server sends the form with the CSRF token embedded into it
-//You don't need to retrieve that CSRF token any way, as it is in the form itself and when you submit it ,
-//with the POST request, the CSRF token gets sent with the Form data 
-//You just need to retrieve the Form from html and fill in appropriate values in it and then just submit it 
-
-//It is important to make get request and get the form as ,
-
-//Directly sending POST request without CSRF token will not work
-
-
-
-
-
-
-
-
 // Request represents a request to the server
 type Request struct {
 	ID   int    `json:"id"`
