@@ -42,10 +42,51 @@ import (
 
 
 
-func POST_Request(){
+// Standerdized and returns type of map[string]interface{}
+
+func GET_Request(request_path string) map[string]interface{} {
+
+	req, err := http.NewRequest("http://url/"+request_path)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	req.Header.Set("Authentication","Bearer "+main.JWT) // JWT must be available
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer res.Body.Close()
+
+	// Read the response body
+	resBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Unmarshal the response body into a map interface 
+	var response map[string]interface{}
+	err = json.Unmarshal(resBody, &response)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	return response
+
+}
 
 
-	req, err := http.NewRequest("POST", "http://example.com/login", bytes.NewBuffer(reqBody))
+
+
+// To be used after successful login and JWT retrieval
+func POST_Request(request_path string, data map[string]interface{}) map[string]interface{} {
+
+
+	req, err := http.NewRequest("POST", "http://example.com/"+request_path, bytes.NewBuffer(reqBody))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -59,7 +100,7 @@ func POST_Request(){
 	req.Header.Set("Authorization", "Bearer "+main.JWT)
 
 	// Add the cookie to the request
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: "123456"})
+	//req.AddCookie(&http.Cookie{Name: "session_id", Value: "123456"})
 
 	// Send the request
 	res, err := client.Do(req)
@@ -77,7 +118,7 @@ func POST_Request(){
 	}
 
 	// Unmarshal the response into a Response struct
-	var response Response
+	var response map[string]interface{}
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
 		fmt.Println(err)
@@ -86,16 +127,5 @@ func POST_Request(){
 
 	fmt.Println(response)
 
-
-
-
-}
-
-//
-func GET_Request(){
-
-
-
-
-
+	
 }

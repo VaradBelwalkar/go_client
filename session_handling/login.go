@@ -24,6 +24,28 @@ import (
 
 //To recogise on server side that the request is holding form data (data submitted through form)
 
+//Here the data is submitted as a string(obviously)as it is NOT mentioned like this "application/json"
+//In a URL-encoded query string, the characters in the string are encoded so that they can be safely transmitted over the Internet. 
+//The encoding replaces certain characters with a percent sign followed by a two-digit hexadecimal number. 
+//or example, a space is encoded as "%20" and a plus sign is encoded as "%2B".
+
+//For example, consider an HTML form with two text fields, 
+//"name" and "email", and a submit button. 
+//When the user fills out the form and clicks the submit button, the form data is sent to the server in the body of a POST request. 
+//The "Content-Type" header of the request would be set to "application/x-www-form-urlencoded" and the body of the 
+//request would look something like this:
+
+//name=John+Doe&email=johndoe%40example.com
+
+//This format is useful because it is simple and easy to parse on the server side.
+//However, it has a limitation in that it can only transmit ASCII characters and does not support file uploads. 
+//For more advanced functionality, other media types such as "multipart/form-data" or "application/json" may be used instead.
+
+
+
+
+
+
 
 
 
@@ -104,7 +126,7 @@ var user_credentials map[string]interface{}
 
 func read_credentials(){
 	// Open the file in binary mode
-	file, err := os.Open("file.bin")
+	file, err := os.Open("credentials.bin")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -119,7 +141,7 @@ func read_credentials(){
 	}
 
 	// Parse the JSON data	
-	err = json.Unmarshal(data, &values)
+	err = json.Unmarshal(data, &user_credentials)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -166,13 +188,13 @@ func Login() {
 	data.Add("password", user_credentials["password"]) //To be retrieved 
 	data.Add("csrf_token",csrfToken)
 
-	req,err:= http.NewRequest("POST","http	://url/login",string.NewReader(data.Encode()))
+	req,err:= http.NewRequest("POST","http://url/login",string.NewReader(data.Encode()))
 	if err!=nil{
 		fmt.Println(err)
 		return 
 	}
 	//The header is set to this to recognise that the body of the request is holding form data
-	req.Header.Set("Content-Type","application/x-www-form-form-urlencoded")
+	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
 	
 	//Here the request is being actually sent
 	//the response object will contain the JWT token
@@ -194,14 +216,7 @@ func Login() {
 	//The JWT token
 	main.JWT:= response.Token    //Here you can access this token anywhere in this package
 
-
-
-
-
 //Login completed
-
-
-
 
 
 }

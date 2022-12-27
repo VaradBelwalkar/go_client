@@ -1,7 +1,7 @@
 package github.com/VaradBelwalkar/go_client
  
 //Just used to export information
-Help := "
+var help = `
 NAME
        go : Client to access microservices
 
@@ -94,4 +94,9 @@ go COMMANDS TO ACCESS RUNTIMES
 
               remove the specified container or all from the server
 
-" 
+`
+
+
+func Help(){
+       fmt.Println(help)
+}
