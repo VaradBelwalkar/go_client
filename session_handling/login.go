@@ -1,16 +1,16 @@
 package session_handling
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"net/url"
 	"io/ioutil"
+	"strings"
 	"net/http"
 	"time"
-	"golang.org/x/net/html"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/VaradBelwalkar/go_client/main"
+	//"github.com/VaradBelwalkar/go_client"
 )
 
 		//Content-Type is one of the headers available in http request
@@ -20,7 +20,7 @@ import (
 //To pass normal json data 
 
 
-//Content-Type --------> application/x-www-form-form-urlencoded
+//Content-Type --------> application/x-www-form-urlencoded
 
 //To recogise on server side that the request is holding form data (data submitted through form)
 
@@ -117,12 +117,13 @@ import (
 
 
 
-//We will assume server is going to send the JWT token through body of the response as JSON itself
+//We will assume server is going to send the JWT token through header 
 
 
 
 //stores the credentials, password as hash
-var user_credentials map[string]interface{}
+//stores username,password,url and port of the server 
+var user_credentials map[string]string
 
 func read_credentials(){
 	// Open the file in binary mode
@@ -167,7 +168,7 @@ func Login() {
 	
 
 	//Request made to get the form required
-	resp,err:=http.NewRequest("http://url/login")
+	resp,err:=http.Get("http://url/login")
 	
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
@@ -184,11 +185,11 @@ func Login() {
 	}
 
 	//Preparing the body of the POST request, which is nothing but form data being sent using appropriate header
-	data.Add("username", user_credentials["username"])
-	data.Add("password", user_credentials["password"]) //To be retrieved 
+	data.Add("username", string(user_credentials["username"]))
+	data.Add("password", string(user_credentials["password"])) //To be retrieved 
 	data.Add("csrf_token",csrfToken)
 
-	req,err:= http.NewRequest("POST","http://url/login",string.NewReader(data.Encode()))
+	req,err:= http.NewRequest("POST","http://url/login",strings.NewReader(data.Encode()))
 	if err!=nil{
 		fmt.Println(err)
 		return 
@@ -206,16 +207,21 @@ func Login() {
 	defer res.Body.Close()
 	
 	// Unmarshal the response into a Response struct
-	var response Response
-	err = json.Unmarshal(resBody, &response)
+	var response http.Response
+	body, err := ioutil.ReadAll(res.Body)
+
+	err = json.Unmarshal(body ,&response)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	//The JWT token
-	main.JWT:= response.Token    //Here you can access this token anywhere in this package
 
+	JWT:= res.Header.Get("authorization")    //Here you can access this token anywhere in this package
+	splitToken:=strings.Split(JWT, "Bearer ")
+	tokenString:=splitToken[1]
+	os.Setenv("JWT",tokenString)
 //Login completed
 
 

@@ -4,15 +4,12 @@ package session_handling
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"io/ioutil"
 	"net/http"
-	"time"
-	"golang.org/x/net/html"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/VaradBelwalkar/go_client/main"
+	//"github.com/VaradBelwalkar/go_client/main"
 )
 
 
@@ -46,18 +43,20 @@ import (
 
 func GET_Request(request_path string) map[string]interface{} {
 
-	req, err := http.NewRequest("http://url/"+request_path)
-	if err != nil {
-		fmt.Println(err)
-		return
+	_, ok := os.LookupEnv("JWT")
+	if ok==false{
+		fmt.Println("Authentication Error!\n Please Login again")
+		return nil
 	}
-
-	req.Header.Set("Authentication","Bearer "+main.JWT) // JWT must be available
+	JWT:=os.Getenv("JWT")
+	req, err := http.NewRequest("GET", "http://example.com/"+request_path,nil)
+	client:=&http.Client{}
+	req.Header.Set("Authorization","Bearer "+JWT) // JWT must be available
 
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 	defer res.Body.Close()
 
@@ -65,7 +64,7 @@ func GET_Request(request_path string) map[string]interface{} {
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 
 	// Unmarshal the response body into a map interface 
@@ -73,7 +72,7 @@ func GET_Request(request_path string) map[string]interface{} {
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 	return response
 
@@ -84,20 +83,29 @@ func GET_Request(request_path string) map[string]interface{} {
 
 // To be used after successful login and JWT retrieval
 func POST_Request(request_path string, data map[string]interface{}) map[string]interface{} {
-
-
-	req, err := http.NewRequest("POST", "http://example.com/"+request_path, bytes.NewBuffer(reqBody))
+	b, err := json.Marshal(data)
+	client:=&http.Client{}
+	if err != nil {
+		fmt.Println("something went wrong")
+	}
+	//Change URL here
+	req, err := http.NewRequest("POST", "http://example.com/"+request_path, bytes.NewBuffer(b))
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 
 	// Set the Content-Type header
 	req.Header.Set("Content-Type", "application/json")
 
 	// Add the JWT to the request header
-	
-	req.Header.Set("Authorization", "Bearer "+main.JWT)
+		_, ok := os.LookupEnv("JWT")
+	if ok==false{
+		fmt.Println("Authentication Error!\n Please Login again")
+		return nil
+	}
+	JWT:=os.Getenv("JWT")
+	req.Header.Set("Authorization", "Bearer "+JWT)
 
 	// Add the cookie to the request
 	//req.AddCookie(&http.Cookie{Name: "session_id", Value: "123456"})
@@ -106,7 +114,7 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 	defer res.Body.Close()
 
@@ -114,7 +122,7 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 
 	// Unmarshal the response into a Response struct
@@ -122,10 +130,10 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 
-	fmt.Println(response)
+	return response
 
 	
 }

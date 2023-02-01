@@ -1,16 +1,17 @@
 package session_handling
 
 import (
-	"bytes"
-	"context"
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"os"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"net/url"
 	"time"
-	"golang.org/x/net/html"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/VaradBelwalkar/go_client/main"
+	//"github.com/VaradBelwalkar/go_client/main"
 )
 
 
@@ -18,35 +19,15 @@ import (
 
 //stores the credentials, password as hash
 
-
-func store_credentials(username string,password string) {
-	user_credentials:= map[string]interface{
-		"username":username,
-		"password":password
-	}
-
-	//This json Marshalling creates an array of unit8
-	// That is info is of []unit8 type    Here []uint8 is same as []byte 
-	info_in_bytes,err :=json.Marshal(user_credentials)
-
-
-	f, err := os.OpenFile("credentials.bin", os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil{
-		fmt.Println("Something went wrong while storing credentials!Please try again")
-	}
-	defer f.Close()
-	
-	_, err = f.Write(info_in_bytes)
-	if err != nil {
-		panic(err)
-		return
-	}
-
-
-
+func completeURL(format string, args ...string) string{
+    for i, v := range args {
+        if i%2 == 0 {
+            args[i] = "{" + v + "}"
+        }
+    }
+    r := strings.NewReplacer(args...)
+	return r.Replace(format)
 }
-
-
 
 
 // This function logs into the server and preserves JWT for further communication
@@ -78,13 +59,20 @@ try:
 		}
         fmt.Println("Your Password does not match. Please try again\n")
 		fmt.Print("Enter your password: ")
-		password, _ := reader.ReadString('\n')
+		password, _ = reader.ReadString('\n')
 		fmt.Print("confirm your password: ")
-		password1, _ := reader.ReadString('\n')
+		password1, _ = reader.ReadString('\n')
 	}
-	
-	//Request made to get the form required
-	resp,err:=http.NewRequest("http://url/Register")
+
+	fmt.Print("Enter the server IP: ")
+	url,_:=reader.ReadString('\n')
+	fmt.Print("Enter the port: ")
+	port,_:=reader.ReadString('\n')
+	//Request made to get the form required	
+	rawURL:="http://{url}:{port}"
+
+	urlString:=	completeURL(rawURL,"url",url,"port",port)
+	resp,err:=http.Get(urlString)
 	
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
@@ -105,7 +93,7 @@ try:
 	data.Add("password", password) 
 	data.Add("csrf_token",csrfToken)
 
-	req,err:= http.NewRequest("POST","http://url/login",string.NewReader(data.Encode()))
+	req,err:= http.NewRequest("POST","http://url/register",strings.NewReader(data.Encode()))
 	if err!=nil{
 		fmt.Println(err)
 		return 
@@ -123,8 +111,9 @@ try:
 	defer res.Body.Close()
 	
 	// Unmarshal the response into a Response struct
-	var response Response
-	err = json.Unmarshal(resBody, &response)
+	var response http.Response
+	body, err := ioutil.ReadAll(res.Body)
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		panic(err)
 	}
@@ -137,7 +126,7 @@ try:
 	if response.StatusCode == 201 {
 		//Meaning the registration is successful
 		fmt.Println("The registered successfully!")
-		store_credentials(username,password)
+		Store_credentials(username,password,url,port)
 		return
 
 	} else if response.StatusCode == 409 {  //    409 StatusCode indicates a "Conflit" that server cannot create a resource because
@@ -146,7 +135,7 @@ try:
 		goto try
 
 	} else {
-		fmt.Prinln(response.StatusCode)
+		fmt.Println(response.StatusCode)
 	}
 
 

@@ -6,7 +6,9 @@ import (
     "os"
 	"os/exec"
     "strings"
-	"github.com/VaradBelwalkar/go_client"
+    "github.com/VaradBelwalkar/help"
+    "github.com/VaradBelwalkar/session_handling"
+	//"github.com/VaradBelwalkar/go_client"
 )
 
 
@@ -47,7 +49,7 @@ func main() {
 			cmd.Run()
             fmt.Println(Help)
 		case "container":
-			switch words[1] :
+			switch words[1] {
 				case "run":
 					//Run appropriate function by passing value of words[2] (container requested)
 				case "list":
@@ -56,14 +58,32 @@ func main() {
 					}else{
 						//Run appropriate function
 					}
-			
+                }
+        case "set":
+            switch words[1]{
+            case "url":
+                // Call apropriate method here
+            }
+            default:
+                fmt.Prinln("Unknown Command")
 
+        case "change":
+            switch words[1]{
+            case "config":
+                Setup()
+
+            default:
+                fmt.Println("Unknown Command")
+            }
+        case "config":
+            //Print configuration here
+            Show_Credentials()
 			
 		case "upload":
 			switch words[1] {}
         default:
             // Print an error message
-            fmt.Println("Unknown command")
+            fmt.Println("Unknown Command")
         }
     }
 }

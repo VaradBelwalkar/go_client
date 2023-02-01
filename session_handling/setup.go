@@ -1,23 +1,21 @@
 package session_handling
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
+	"bufio"
+	"os"
 	"io/ioutil"
-	"net/http"
-	"time"
-	"golang.org/x/net/html"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/VaradBelwalkar/go_client/main"
+	//"github.com/VaradBelwalkar/go_client/main"
 )
 
 
-func store_credentials(username string,password string) {
-	user_credentials:= map[string]interface{
-		"username":username,
-		"password":password
+func Store_credentials(username string,password string,url string,port string) {
+	user_credentials:= map[string]interface{}{
+		"usernaewme":username,
+		"password":password,
+		"url":url,
+		"port":port,
 	}
 
 	//This json Marshalling creates an array of unit8
@@ -46,7 +44,7 @@ func store_credentials(username string,password string) {
 
 
 func Setup(){
-
+    reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter the username: ")
 	username, _ := reader.ReadString('\n')
 
@@ -61,23 +59,30 @@ func Setup(){
 		}
         fmt.Println("Your Password does not match. Please try again\n")
 		fmt.Print("Enter your password: ")
-		password, _ := reader.ReadString('\n')
+		password, _ = reader.ReadString('\n')
 		fmt.Print("confirm your password: ")
-		password1, _ := reader.ReadString('\n')
+		password1, _ = reader.ReadString('\n')
 	}
-	store_credentials(username,password)
+
+	fmt.Print("Enter the url: ")
+	url,_:=reader.ReadString('\n')
+	fmt.Print("Enter the port: ")
+	port,_:=reader.ReadString('\n')
+
+
+	Store_credentials(username,password,url,port)
 
 
 }
 
 
-func Show_Credentials(){
+func Show_Credentials()map[string]interface{}{
 	var user_credentials map[string]interface{}
 	// Open the file in binary mode
 	file, err := os.Open("credentials.bin")
 	if err != nil {
-		fmt.Println(err)
-		return
+		fmt.Println("File not found!\n \t\t Run `change config` to configure user credentials")
+		return nil
 	}
 	defer file.Close()
 
@@ -85,17 +90,16 @@ func Show_Credentials(){
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
 
 	// Parse the JSON data	
 	err = json.Unmarshal(data, &user_credentials)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return nil
 	}
-
-	fmt.Println("username : ",user_credentials["username"])
-	fmtl.Println("password :",user_credentials["password"])
+	//has username, password URL, and port
+	return user_credentials
 
 }

@@ -15,8 +15,11 @@ func Container_Start(containerName string){
 
 
 	//resp is of type map[string]interface{}
-	resp := GET_Request(request_path)
-
+	resp,err:= GET_Request(request_path)
+	if err!=nil{
+		fmt.Println("some error here to be handled here")
+		return 
+	}
 	privateKey:=resp["privatekey"]	
 	port:=resp["port"]
 	// define the path to the bash script

@@ -15,12 +15,17 @@ func Container_Run(imageName string){
 
 
 	//resp is of type map[string]interface{}
-	resp := GET_Request(request_path)
+	resp,err:= GET_Request(request_path)  
 
+	if err!=nil {
+		fmt.Prinln(err)
+		return 
+	}
+	
 	privateKey:=resp["privatekey"]	
 	port:=resp["port"]
 	// define the path to the bash script
-	scriptPath := "/path/to/script.sh"
+	scriptPath := "./src/connections/bash_script.sh"
 
 	// Parameters to pass to the script
 	params := []string{privateKey,port}
