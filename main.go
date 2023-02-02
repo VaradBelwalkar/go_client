@@ -6,8 +6,8 @@ import (
     "os"
 	"os/exec"
     "strings"
-    "github.com/VaradBelwalkar/help"
-    "github.com/VaradBelwalkar/session_handling"
+    //"github.com/VaradBelwalkar/help"
+    //"github.com/VaradBelwalkar/session_handling"
 	//"github.com/VaradBelwalkar/go_client"
 )
 
@@ -17,6 +17,8 @@ func main() {
 	cmd := exec.Command("cls")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
+    //Login with the present credentials
+
     for {
 		
         // Prompt the user for input

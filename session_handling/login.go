@@ -151,37 +151,38 @@ func read_credentials(){
 }
 
 // This function logs into the server and preserves JWT for further communication
-func Login() {
+func Login() (bool,string){
 	// Create a new HTTP client with a timeout
 	client := &http.Client{
 		Timeout: 10 * time.Second,
 	}
  
-	
 	//Do IO on file to retrieve username and password 
 
-	read_credentials()
-
+	user_credentials,err:=Show_Credentials()
+	if err!=nil{
+		//handle error
+	}
 	//Do whenever submitting form data
 	data := url.Values{}
 
 	
 
 	//Request made to get the form required
-	resp,err:=http.Get("http://url/login")
+	resp,err:=http.Get(user_credentials["url"]+":"+user_credentials["port"]+"/login")
 	
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		fmt.Println(err)
-		return
+		fmt.Println("something went wrong")
+		os.Exit(0)
 	}
 
 	// Find the hidden field with the name "csrf_token"
 	csrfToken := doc.Find("input[name=csrf_token]").First().AttrOr("value", "")
 	if csrfToken == "" {
 		fmt.Println("CSRF token not found")
-		return
+		return true,"\nserver side error!\n" // server side error!
 	}
 
 	//Preparing the body of the POST request, which is nothing but form data being sent using appropriate header
@@ -189,10 +190,9 @@ func Login() {
 	data.Add("password", string(user_credentials["password"])) //To be retrieved 
 	data.Add("csrf_token",csrfToken)
 
-	req,err:= http.NewRequest("POST","http://url/login",strings.NewReader(data.Encode()))
+	req,err:= http.NewRequest("POST",user_credentials["url"]+":"+user_credentials["port"]+"/login",strings.NewReader(data.Encode()))
 	if err!=nil{
-		fmt.Println(err)
-		return 
+		return true,"\nServer not responding!\n" //server not responding !
 	}
 	//The header is set to this to recognise that the body of the request is holding form data
 	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
@@ -202,28 +202,27 @@ func Login() {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return true,"\nSomething went wrong!\n"
 	}
 	defer res.Body.Close()
 	
-	// Unmarshal the response into a Response struct
-	var response http.Response
-	body, err := ioutil.ReadAll(res.Body)
-
-	err = json.Unmarshal(body ,&response)
-	if err != nil {
-		fmt.Println(err)
-		return
+	//We can get here statuses only from 403 or 208 
+	info:=Handle_resp_err(res)
+	if info!=false{
+		return true,""
 	}
-
 	//The JWT token
-
 	JWT:= res.Header.Get("authorization")    //Here you can access this token anywhere in this package
 	splitToken:=strings.Split(JWT, "Bearer ")
 	tokenString:=splitToken[1]
 	os.Setenv("JWT",tokenString)
+
+		
+
+
 //Login completed
 
+return true,""
 
 }
 

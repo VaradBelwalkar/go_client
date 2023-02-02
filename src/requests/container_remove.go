@@ -8,7 +8,7 @@ import (
 )
 
 
-func Container_Run(containerName string){
+func Container_Remove(containerName string){
 
 	request_path:="remove/"+containerName
 
@@ -16,7 +16,12 @@ func Container_Run(containerName string){
 	//resp is of type map[string]interface{}
 	resp := GET_Request(request_path)
 
-//Handle more things here
+	//Here the backend is going to give JSON response containing info with 4 values,
+	// 200 == OK
+	// 300 == 
+
+
+//Handle the response here
 	
 	
 }

@@ -33,7 +33,6 @@ func Store_credentials(username string,password string,url string,port string) {
 	
 	_, err = f.Write(info_in_bytes)
 	if err != nil {
-		panic(err)
 		return
 	}
 	fmt.Println("Configuration stored successfully!")
@@ -57,7 +56,7 @@ func Setup(){
 		if password == password1{
 			break;
 		}
-        fmt.Println("Your Password does not match. Please try again\n")
+        fmt.Println("Your Password does not match. Please try again")
 		fmt.Print("Enter your password: ")
 		password, _ = reader.ReadString('\n')
 		fmt.Print("confirm your password: ")
@@ -76,30 +75,29 @@ func Setup(){
 }
 
 
-func Show_Credentials()map[string]interface{}{
-	var user_credentials map[string]interface{}
+func Show_Credentials()(map[string]string,error){
+	var user_credentials map[string]string
 	// Open the file in binary mode
 	file, err := os.Open("credentials.bin")
 	if err != nil {
 		fmt.Println("File not found!\n \t\t Run `change config` to configure user credentials")
-		return nil
+		return nil,err
 	}
 	defer file.Close()
 
 	// Read the file into a byte slice
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return nil,err
 	}
 
 	// Parse the JSON data	
 	err = json.Unmarshal(data, &user_credentials)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil,err
 	}
 	//has username, password URL, and port
-	return user_credentials
+	return user_credentials,nil
 
 }

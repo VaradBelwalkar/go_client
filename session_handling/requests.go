@@ -40,7 +40,7 @@ import (
 
 
 // Standerdized and returns type of map[string]interface{}
-
+// To be used after successful login and JWT retrieval
 func GET_Request(request_path string) map[string]interface{} {
 
 	_, ok := os.LookupEnv("JWT")
@@ -49,7 +49,14 @@ func GET_Request(request_path string) map[string]interface{} {
 		return nil
 	}
 	JWT:=os.Getenv("JWT")
-	req, err := http.NewRequest("GET", "http://example.com/"+request_path,nil)
+
+	credHolder,err:=Show_Credentials()
+	if err!=nil{
+		fmt.Println(err)
+		return nil
+	}
+
+	req, err := http.NewRequest("GET", credHolder["url"]+":"+credHolder["port"]+request_path,nil)
 	client:=&http.Client{}
 	req.Header.Set("Authorization","Bearer "+JWT) // JWT must be available
 
@@ -59,6 +66,11 @@ func GET_Request(request_path string) map[string]interface{} {
 		return nil
 	}
 	defer res.Body.Close()
+
+	info:=Handle_resp_err(res)
+	if info!=false{
+		return nil
+	}
 
 	// Read the response body
 	resBody, err := ioutil.ReadAll(res.Body)
@@ -89,7 +101,14 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 		fmt.Println("something went wrong")
 	}
 	//Change URL here
-	req, err := http.NewRequest("POST", "http://example.com/"+request_path, bytes.NewBuffer(b))
+
+	credHolder,err:=Show_Credentials()
+	if err!=nil{
+		fmt.Println(err)
+		return nil
+	}
+
+	req, err := http.NewRequest("POST",  credHolder["url"]+":"+credHolder["port"]+request_path, bytes.NewBuffer(b))
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -118,6 +137,10 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	}
 	defer res.Body.Close()
 
+	info:=Handle_resp_err(res)
+	if info!=false{
+		return nil
+	}
 	// Read the response
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
