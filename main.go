@@ -40,6 +40,14 @@ func main() {
 
         // Check the first word to see which command the user entered
         switch words[0] {
+        case "register":
+            register()
+        case "remove":
+            if words[1]!="account"{
+                fmt.Println("Wrong input!")
+                continue
+            }
+            remove_account()
         case "exit":
             // Exit the program
             fmt.Println("Exiting...")

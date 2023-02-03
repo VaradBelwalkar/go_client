@@ -1,11 +1,9 @@
 package session_handling
 
-import (
+import(
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"net/url"
@@ -15,9 +13,7 @@ import (
 
 
 
-
-// This function logs into the server and preserves JWT for further communication
-func Register() {
+func Remove_account() {
 	// Create a new HTTP client with a timeout
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -30,8 +26,8 @@ func Register() {
 
 	
 	reader := bufio.NewReader(os.Stdin)
-try:
-	fmt.Print("Enter the username you want: ")
+
+	fmt.Print("Enter the username : ")
 	username, _ := reader.ReadString('\n')
 
 	fmt.Print("Enter your password: ")
@@ -49,14 +45,22 @@ try:
 		fmt.Print("confirm your password: ")
 		password1, _ = reader.ReadString('\n')
 	}
+	user_credentials,err :=Show_Credentials()
+	var url,port string
+	if err!=nil{
+		fmt.Print("Enter the server IP: ")
+		url,_=reader.ReadString('\n')
+		fmt.Print("Enter the port: ")
+		port,_=reader.ReadString('\n')
+	}else{
+		url=user_credentials["url"]
+		port=user_credentials["port"]
+	}
 
-	fmt.Print("Enter the server IP: ")
-	url,_:=reader.ReadString('\n')
-	fmt.Print("Enter the port: ")
-	port,_:=reader.ReadString('\n')
+
 	//Request made to get the form required	
 
-	urlString:=	"http://"+strings.ReplaceAll(url, " ", "")+strings.ReplaceAll(port, " ", "")+"/register"
+	urlString:=	"http://"+strings.ReplaceAll(url, " ", "")+strings.ReplaceAll(port, " ", "")+"/remove_account"
 	res,err:=http.Get(urlString)
 	
 
@@ -78,12 +82,7 @@ try:
 	data.Add("password", password) 
 	data.Add("csrf_token",csrfToken)
 
-	user_credentials,err:=Show_Credentials()
-	if err!=nil{
-		//handle error
-	}
-
-	req,err:= http.NewRequest("POST",user_credentials["url"]+":"+user_credentials["port"]+"/register",strings.NewReader(data.Encode()))
+	req,err:= http.NewRequest("POST",user_credentials["url"]+":"+user_credentials["port"]+"/remove_account",strings.NewReader(data.Encode()))
 	if err!=nil{
 		fmt.Println(err)
 		return 
@@ -100,52 +99,22 @@ try:
 	}
 	defer res.Body.Close()
 	
-	// Unmarshal the response into a Response struct
-	var response http.Response
-	body, err := ioutil.ReadAll(res.Body)
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		panic(err)
-	}
-
-	//The JWT token
-	 //Here you can access this token anywhere in this package
-    
-
-	//Here the 201 StatusCode means the resource is successfully created on the server
-	if response.StatusCode == 201 {
-		//Meaning the registration is successful
-		fmt.Println("The registered successfully!")
-		Store_credentials(username,password,url,port)
+	status,str:=Handle_resp_err(res)
+	if status == 200{
+		fmt.Println("Account deleted successfully!")
 		return
-
-	} else if response.StatusCode == 409 {  //    409 StatusCode indicates a "Conflit" that server cannot create a resource because
-											  //    it already exists
-		fmt.Println("The username already exists! Please choose another username")
-		goto try
-
-	} else {
-		fmt.Println(response.StatusCode)
+	}else{
+		if status == 403{
+			fmt.Println("\nWrong password!")
+			return
+		} else if status == 404{
+		fmt.Println("\nUser doesn't exist!")}
+		fmt.Println(str)
+		return
 	}
-
-
-
-
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

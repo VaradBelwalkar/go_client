@@ -206,9 +206,16 @@ func Login() (bool,string){
 	}
 	defer res.Body.Close()
 	
-	//We can get here statuses only from 403 or 208 
-	info:=Handle_resp_err(res)
-	if info!=false{
+	//We can get here statuses only 403 or 208 
+	status,str:=Handle_resp_err(res)
+	if status==498{
+		check,str:=Login()
+		if check!=false{
+			fmt.Println(str)
+			return true,""
+		}
+	}else{
+		fmt.Println(str)
 		return true,""
 	}
 	//The JWT token
@@ -222,7 +229,7 @@ func Login() (bool,string){
 
 //Login completed
 
-return true,""
+return false,""
 
 }
 

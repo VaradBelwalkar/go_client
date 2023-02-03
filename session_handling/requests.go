@@ -67,8 +67,15 @@ func GET_Request(request_path string) map[string]interface{} {
 	}
 	defer res.Body.Close()
 
-	info:=Handle_resp_err(res)
-	if info!=false{
+	status,str:=Handle_resp_err(res)
+	if status==401{
+		check,str:=Login()
+		if check!=false{
+			fmt.Println(str)
+			return nil
+		}
+	}else{
+		fmt.Println(str)
 		return nil
 	}
 
@@ -137,8 +144,15 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	}
 	defer res.Body.Close()
 
-	info:=Handle_resp_err(res)
-	if info!=false{
+	status,str:=Handle_resp_err(res)
+	if status ==200{}else if status==401{
+		check,str:=Login()
+		if check!=false{
+			fmt.Println(str)
+			return nil
+		}
+	}else{
+		fmt.Println(str)
 		return nil
 	}
 	// Read the response
