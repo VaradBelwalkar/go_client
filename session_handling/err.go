@@ -14,7 +14,7 @@ import (
 //It will handle and print appropriate response to the user so no handling in the client code
 func Handle_resp_err(httpResponse *http.Response) (int,string){
 
-	if httpResponse.StatusCode == 403{
+	if httpResponse.StatusCode == 403{ // wrong password
 
 		return 403,"\nWrong password!\tPlease update your password by running config edit\n"
 	}else if httpResponse.StatusCode == 208{
@@ -23,14 +23,21 @@ func Handle_resp_err(httpResponse *http.Response) (int,string){
 	}else if httpResponse.StatusCode == 200{	
 		return 200,"OK"
 	
-} else if httpResponse.StatusCode == 401 {
+} else if httpResponse.StatusCode == 401 { //invalid or expired JWT
 
 	return 401,"\nLogin session expired!\t Please login again!\n"
 
-} else{
+}else if httpResponse.StatusCode == 409{
+	return 401,"\nUser already exists!"
+}else if httpResponse.StatusCode == 400{
+	return 400,"\nSomething went wrong on your side!"
+}else{
 
 	return 500,"something Went wrong"
 
 }
 
 }
+
+
+// StatusConflit 409

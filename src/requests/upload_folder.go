@@ -1,4 +1,4 @@
-package main
+package requests
 
 import (
     "bytes"
@@ -8,49 +8,50 @@ import (
     "net/http"
     "os"
     "path/filepath"
+    "io/ioutil"
+    sh "github.com/VaradBelwalkar/go_client/session_handling"
 )
 
-func main() {
-    // Create a new HTTP POST request
-    req, err := http.NewRequest("POST", "http://localhost:8080/upload", nil)
+
+func UploadFolder(folderPath string) {
+    data := make(map[string]interface{})
+
+    files, err := ioutil.ReadDir(folderPath)
     if err != nil {
         panic(err)
     }
 
-    // Set the Content-Type header to "multipart/form-data"
-    req.Header.Set("Content-Type", "multipart/form-data")
+    for _, file := range files {
+        if file.IsDir() {
+            UploadFolder(filepath.Join(folderPath, file.Name()))
+        } else {
+            filePath := filepath.Join(folderPath, file.Name())
+            file, err := os.Open(filePath)
+            if err != nil {
+                panic(err)
+            }
+            defer file.Close()
 
-    // Create a new multipart/form-data writer
-    writer := multipart.NewWriter(req.Body)
-    defer writer.Close()
+            buffer := new(bytes.Buffer)
+            _, err = io.Copy(buffer, file)
+            if err != nil {
+                panic(err)
+            }
 
-    // Walk through the directory tree and add all files to the request
-    filepath.Walk("path/to/folder", func(path string, info os.FileInfo, err error) error {
-        if info.IsDir() {
-            return nil
+            data[filePath] = buffer
         }
-
-        // Open the file
-        file, err := os.Open(path)
-        if err != nil {
-            return err
-        }
-        defer file.Close()
-
-        // Add the file to the request
-        part, err := writer.CreateFormFile(info.Name(), info.Name())
-        if err != nil {
-            return err
-        }
-        _, err = io.Copy(part, file)
-        return err
-    })
-
-    // Send the request
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    if err != nil {
-        panic(err)
     }
-    defer resp.Body.Close()
+
+    status, check := sh.POST_Request("/upload_folder", data)
+    if check != 200 {
+        if check == 500 {
+            fmt.Println("Server error!")
+            return
+        } else if check == 502 {
+            fmt.Println("Server not reachable!")
+            return
+        }
+    }
+
+    fmt.Printf("Folder %s uploaded successfully with status %d\n", folderPath, status)
 }

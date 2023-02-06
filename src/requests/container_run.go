@@ -5,7 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"bufio"
+	"os/exec"
+	"os"
 	"golang.org/x/crypto/ssh"
+	sh "github.com/VaradBelwalkar/go_client/session_handling"
 )
 
 
@@ -15,10 +18,10 @@ func Container_Run(imageName string){
 
 
 	//resp is of type map[string]interface{}
-	resp,err:= GET_Request(request_path)  
+	resp,err:= sh.GET_Request(request_path)  
 
 	if err!=nil {
-		fmt.Prinln(err)
+		fmt.Println(err)
 		return 
 	}
 	

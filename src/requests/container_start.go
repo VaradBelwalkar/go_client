@@ -5,7 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"bufio"
+	"os"
+	"os/exec"
 	"golang.org/x/crypto/ssh"
+	sh "github.com/VaradBelwalkar/go_client/session_handling"
 )
 
 
@@ -15,7 +18,7 @@ func Container_Start(containerName string){
 
 
 	//resp is of type map[string]interface{}
-	resp,err:= GET_Request(request_path)
+	resp,err:= sh.GET_Request(request_path)
 	if err!=nil{
 		fmt.Println("some error here to be handled here")
 		return 

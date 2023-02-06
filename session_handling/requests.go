@@ -9,7 +9,7 @@ import (
 	"os"
 	"io/ioutil"
 	"net/http"
-	//"github.com/VaradBelwalkar/go_client/main"
+
 )
 
 
@@ -41,19 +41,22 @@ import (
 
 // Standerdized and returns type of map[string]interface{}
 // To be used after successful login and JWT retrieval
-func GET_Request(request_path string) map[string]interface{} {
+func GET_Request(request_path string) (map[string]interface{},int) {
 
 	_, ok := os.LookupEnv("JWT")
 	if ok==false{
-		fmt.Println("Authentication Error!\n Please Login again")
-		return nil
+		check,str:=Login()
+		if check!=false{
+			fmt.Println(str)
+			return nil,502
+		}
 	}
 	JWT:=os.Getenv("JWT")
 
 	credHolder,err:=Show_Credentials()
 	if err!=nil{
 		fmt.Println(err)
-		return nil
+		return nil,404
 	}
 
 	req, err := http.NewRequest("GET", credHolder["url"]+":"+credHolder["port"]+request_path,nil)
@@ -63,7 +66,7 @@ func GET_Request(request_path string) map[string]interface{} {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil,500
 	}
 	defer res.Body.Close()
 
@@ -72,18 +75,17 @@ func GET_Request(request_path string) map[string]interface{} {
 		check,str:=Login()
 		if check!=false{
 			fmt.Println(str)
-			return nil
+			return nil,404
 		}
 	}else{
 		fmt.Println(str)
-		return nil
+		return nil,500
 	}
 
 	// Read the response body
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return nil,200
 	}
 
 	// Unmarshal the response body into a map interface 
@@ -91,9 +93,9 @@ func GET_Request(request_path string) map[string]interface{} {
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil,500
 	}
-	return response
+	return response,200
 
 }
 
@@ -101,7 +103,7 @@ func GET_Request(request_path string) map[string]interface{} {
 
 
 // To be used after successful login and JWT retrieval
-func POST_Request(request_path string, data map[string]interface{}) map[string]interface{} {
+func POST_Request(request_path string, data map[string]interface{}) (map[string]interface{},int) {
 	b, err := json.Marshal(data)
 	client:=&http.Client{}
 	if err != nil {
@@ -112,13 +114,12 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	credHolder,err:=Show_Credentials()
 	if err!=nil{
 		fmt.Println(err)
-		return nil
+		return nil,502
 	}
 
 	req, err := http.NewRequest("POST",  credHolder["url"]+":"+credHolder["port"]+request_path, bytes.NewBuffer(b))
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return nil,502
 	}
 
 	// Set the Content-Type header
@@ -127,8 +128,11 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	// Add the JWT to the request header
 		_, ok := os.LookupEnv("JWT")
 	if ok==false{
-		fmt.Println("Authentication Error!\n Please Login again")
-		return nil
+		check,str:=Login()
+		if check!=false{
+			fmt.Println(str)
+			return nil,502
+		}
 	}
 	JWT:=os.Getenv("JWT")
 	req.Header.Set("Authorization", "Bearer "+JWT)
@@ -140,7 +144,7 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil,502
 	}
 	defer res.Body.Close()
 
@@ -149,17 +153,16 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 		check,str:=Login()
 		if check!=false{
 			fmt.Println(str)
-			return nil
+			return nil,502
 		}
 	}else{
 		fmt.Println(str)
-		return nil
+		return nil,502
 	}
 	// Read the response
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return nil,200
 	}
 
 	// Unmarshal the response into a Response struct
@@ -167,10 +170,12 @@ func POST_Request(request_path string, data map[string]interface{}) map[string]i
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil,500
 	}
 
-	return response
+	return response,200
 
 	
 }
+
+
