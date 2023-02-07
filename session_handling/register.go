@@ -2,10 +2,8 @@ package session_handling
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"net/url"
@@ -18,6 +16,9 @@ import (
 
 // This function logs into the server and preserves JWT for further communication
 func Register() {
+	colorReset := "\033[0m"
+	colorGreen := "\033[32m"
+    colorRed := "\033[31m"
 	// Create a new HTTP client with a timeout
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -30,36 +31,44 @@ func Register() {
 
 	
 	reader := bufio.NewReader(os.Stdin)
-try:
+
 	fmt.Print("Enter the username you want: ")
-	username, _ := reader.ReadString('\n')
+	tempName, _ := reader.ReadString('\n')
+	username:=strings.ReplaceAll(tempName,"\n","")
 
 	fmt.Print("Enter your password: ")
-	password, _ := reader.ReadString('\n')
+	tempPassword, _ := reader.ReadString('\n')
+	password:=strings.ReplaceAll(tempPassword,"\n","")
 	fmt.Print("confirm your password: ")
-	password1, _ := reader.ReadString('\n')
+	tempPassword1, _ := reader.ReadString('\n')
+	password1:=strings.ReplaceAll(tempPassword1,"\n","")
 
     for {
 		if password == password1{
 			break;
 		}
         fmt.Println("Your Password does not match. Please try again")
-		fmt.Print("Enter your password: ")
-		password, _ = reader.ReadString('\n')
+		fmt.Print(" Enter your password: ")
+		tempPassword, _ = reader.ReadString('\n')
+		password=strings.ReplaceAll(tempPassword,"\n","")
 		fmt.Print("confirm your password: ")
-		password1, _ = reader.ReadString('\n')
+		tempPassword1, _ = reader.ReadString('\n')
+		password1=strings.ReplaceAll(tempPassword1,"\n","")
 	}
 
 	fmt.Print("Enter the server IP: ")
-	url,_:=reader.ReadString('\n')
+	tempIP,_:=reader.ReadString('\n')
+	IP:=strings.ReplaceAll(tempIP,"\n","")
 	fmt.Print("Enter the port: ")
-	port,_:=reader.ReadString('\n')
+	tempPort,_:=reader.ReadString('\n')
+	port:=strings.ReplaceAll(tempPort,"\n","")
 	//Request made to get the form required	
-
-	urlString:=	"http://"+strings.ReplaceAll(url, " ", "")+strings.ReplaceAll(port, " ", "")+"/register"
+	urlString:=	"http://"+strings.ReplaceAll(IP, " ", "")+":"+strings.ReplaceAll(port, " ", "")+"/register"
 	res,err:=http.Get(urlString)
+	if err!=nil{
+		fmt.Println(err)
+	}
 	
-
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -67,27 +76,29 @@ try:
 	}
 
 	// Find the hidden field with the name "csrf_token"
-	csrfToken := doc.Find("input[name=csrf_token]").First().AttrOr("value", "")
-	if csrfToken == "" {
-		fmt.Println("CSRF token not found")
+	csrfToken := doc.Find("input[name=csrf]").First().AttrOr("value", "")
+		if csrfToken == "" {
+		fmt.Println(string(colorRed),"CSRF token not found", string(colorReset))
 		return
 	}
 
 	//Preparing the body of the POST request, which is nothing but form data being sent using appropriate header
 	data.Add("username", username)
 	data.Add("password", password) 
-	data.Add("csrf_token",csrfToken)
+	data.Add("csrf",csrfToken)
 
-	user_credentials,err:=Show_Credentials()
-	if err!=nil{
-		//handle error
-	}
 
-	req,err:= http.NewRequest("POST",user_credentials["url"]+":"+user_credentials["port"]+"/register",strings.NewReader(data.Encode()))
+	cookie := &http.Cookie{
+        Name:   "csrftoken",
+        Value:  csrfToken,
+        MaxAge: 300,
+    }
+	req,err:= http.NewRequest("POST","http://"+strings.ReplaceAll(IP, " ", "")+":"+strings.ReplaceAll(port, " ", "")+"/register",strings.NewReader(data.Encode()))
 	if err!=nil{
 		fmt.Println(err)
 		return 
 	}
+	req.AddCookie(cookie)
 	//The header is set to this to recognise that the body of the request is holding form data
 	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
 	
@@ -101,36 +112,33 @@ try:
 	defer res.Body.Close()
 	
 	// Unmarshal the response into a Response struct
-	var response http.Response
-	body, err := ioutil.ReadAll(res.Body)
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		panic(err)
-	}
+	// This is just temporary implementation which doesn't contribute to any functionality as 
+	// we are not currently having any response info in the body as of now
+	//var response http.Response
+	//body, err := ioutil.ReadAll(res.Body)
+	//err = json.Unmarshal(body, &response)
+	//if err != nil {
+	//	return
+	//}
 
 	//The JWT token
 	 //Here you can access this token anywhere in this package
     
 
 	//Here the 201 StatusCode means the resource is successfully created on the server
-	if response.StatusCode == 201 {
+	if res.StatusCode == 200 {
 		//Meaning the registration is successful
-		fmt.Println("The registered successfully!")
-		Store_credentials(username,password,url,port)
+		fmt.Println(string(colorGreen),"Registered successfully!", string(colorReset))
+		Store_credentials(username,password,IP,port)
 		return
 
-	} else if response.StatusCode == 409 {  //    409 StatusCode indicates a "Conflit" that server cannot create a resource because
+	} else if res.StatusCode == 409 {  //    409 StatusCode indicates a "Conflit" that server cannot create a resource because
 											  //    it already exists
-		fmt.Println("The username already exists! Please choose another username")
-		goto try
+		fmt.Println(string(colorRed),"The username already exists! Please choose another username", string(colorReset))
 
 	} else {
-		fmt.Println(response.StatusCode)
+		fmt.Println("something went wrong!")
 	}
-
-
-
-
 
 
 }

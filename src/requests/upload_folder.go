@@ -4,8 +4,6 @@ import (
     "bytes"
     "fmt"
     "io"
-    "mime/multipart"
-    "net/http"
     "os"
     "path/filepath"
     "io/ioutil"

@@ -46,21 +46,24 @@ func Remove_account() {
 		password1, _ = reader.ReadString('\n')
 	}
 	user_credentials,err :=Show_Credentials()
-	var url,port string
+	var tempIP,IP,tempPort,port string
 	if err!=nil{
 		fmt.Print("Enter the server IP: ")
-		url,_=reader.ReadString('\n')
+		tempIP,_=reader.ReadString('\n')
+		IP=strings.ReplaceAll(tempIP,"\n","")
 		fmt.Print("Enter the port: ")
-		port,_=reader.ReadString('\n')
+		tempPort,_=reader.ReadString('\n')
+		port=strings.ReplaceAll(tempPort,"\n","")
+
 	}else{
-		url=user_credentials["url"]
+		IP=user_credentials["ip"]
 		port=user_credentials["port"]
 	}
 
 
 	//Request made to get the form required	
 
-	urlString:=	"http://"+strings.ReplaceAll(url, " ", "")+strings.ReplaceAll(port, " ", "")+"/remove_account"
+	urlString:=	"http://"+strings.ReplaceAll(IP, " ", "")+strings.ReplaceAll(port, " ", "")+"/remove_account"
 	res,err:=http.Get(urlString)
 	
 
@@ -71,7 +74,7 @@ func Remove_account() {
 	}
 
 	// Find the hidden field with the name "csrf_token"
-	csrfToken := doc.Find("input[name=csrf_token]").First().AttrOr("value", "")
+	csrfToken := doc.Find("input[name=csrf]").First().AttrOr("value", "")
 	if csrfToken == "" {
 		fmt.Println("CSRF token not found")
 		return
@@ -80,13 +83,18 @@ func Remove_account() {
 	//Preparing the body of the POST request, which is nothing but form data being sent using appropriate header
 	data.Add("username", username)
 	data.Add("password", password) 
-	data.Add("csrf_token",csrfToken)
-
-	req,err:= http.NewRequest("POST",user_credentials["url"]+":"+user_credentials["port"]+"/remove_account",strings.NewReader(data.Encode()))
+	data.Add("csrf",csrfToken)
+	cookie := &http.Cookie{
+        Name:   "csrftoken",
+        Value:  csrfToken,
+        MaxAge: 300,
+    }
+	req,err:= http.NewRequest("POST",urlString,strings.NewReader(data.Encode()))
 	if err!=nil{
 		fmt.Println(err)
 		return 
 	}
+	req.AddCookie(cookie)
 	//The header is set to this to recognise that the body of the request is holding form data
 	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
 	

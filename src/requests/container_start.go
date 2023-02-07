@@ -2,29 +2,26 @@ package requests
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"bufio"
 	"os"
 	"os/exec"
-	"golang.org/x/crypto/ssh"
 	sh "github.com/VaradBelwalkar/go_client/session_handling"
 )
 
 
 func Container_Start(containerName string){
 
-	request_path:="resume/"+containerName
+	request_path:="/container/resume/"+containerName
 
 
 	//resp is of type map[string]interface{}
 	resp,err:= sh.GET_Request(request_path)
-	if err!=nil{
+	if err!=200{
 		fmt.Println("some error here to be handled here")
 		return 
 	}
-	privateKey:=resp["privatekey"]	
-	port:=resp["port"]
+	privateKey:=resp["privatekey"].(string)	
+	port:=resp["port"].(string)
 	// define the path to the bash script
 	scriptPath := "/path/to/script.sh"
 

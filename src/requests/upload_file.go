@@ -3,7 +3,6 @@ package requests
 import (
     "bytes"
     "io"
-    "net/http"
     "os"
     "fmt"
     sh "github.com/VaradBelwalkar/go_client/session_handling"

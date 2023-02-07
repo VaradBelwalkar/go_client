@@ -1,10 +1,10 @@
 module github.com/VaradBelwalkar/go_client
 
-go 1.19
+go 1.18
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
-	golang.org/x/crypto v0.5.0
+	github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203
 )
 
 require (

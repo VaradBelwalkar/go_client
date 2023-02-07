@@ -59,7 +59,7 @@ func GET_Request(request_path string) (map[string]interface{},int) {
 		return nil,404
 	}
 
-	req, err := http.NewRequest("GET", credHolder["url"]+":"+credHolder["port"]+request_path,nil)
+	req, err := http.NewRequest("GET","http://"+credHolder["ip"]+":"+credHolder["port"]+request_path,nil)
 	client:=&http.Client{}
 	req.Header.Set("Authorization","Bearer "+JWT) // JWT must be available
 
@@ -117,7 +117,7 @@ func POST_Request(request_path string, data map[string]interface{}) (map[string]
 		return nil,502
 	}
 
-	req, err := http.NewRequest("POST",  credHolder["url"]+":"+credHolder["port"]+request_path, bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST","http://"+credHolder["ip"]+":"+credHolder["port"]+request_path, bytes.NewBuffer(b))
 	if err != nil {
 		return nil,502
 	}

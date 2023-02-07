@@ -1,5 +1,8 @@
-package github.com/VaradBelwalkar/go_client
+package help
  
+import (
+       "fmt"
+)
 //Just used to export information
 var help = `
 NAME

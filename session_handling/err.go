@@ -17,9 +17,9 @@ func Handle_resp_err(httpResponse *http.Response) (int,string){
 	if httpResponse.StatusCode == 403{ // wrong password
 
 		return 403,"\nWrong password!\tPlease update your password by running config edit\n"
-	}else if httpResponse.StatusCode == 208{
+	}else if httpResponse.StatusCode == 404{
 
-		return 404,"User doesn't exist!Please create account by running \"setup\"or update your credentials by running \"config edit\""
+		return 404,"User doesn't exist!\nPlease create account by running \"setup\"or update your credentials by running \"change config\""
 	}else if httpResponse.StatusCode == 200{	
 		return 200,"OK"
 	

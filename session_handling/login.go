@@ -127,7 +127,7 @@ var user_credentials map[string]string
 
 func read_credentials(){
 	// Open the file in binary mode
-	file, err := os.Open("credentials.bin")
+	file, err := os.Open("/home/varad/repositories/go_client/credentials.bin")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -152,6 +152,9 @@ func read_credentials(){
 
 // This function logs into the server and preserves JWT for further communication
 func Login() (bool,string){
+	colorReset := "\033[0m"
+
+    colorRed := "\033[31m"
 	// Create a new HTTP client with a timeout
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -161,7 +164,7 @@ func Login() (bool,string){
 
 	user_credentials,err:=Show_Credentials()
 	if err!=nil{
-		//handle error
+		fmt.Println("Please run change config to store your credentials")
 	}
 	//Do whenever submitting form data
 	data := url.Values{}
@@ -169,7 +172,7 @@ func Login() (bool,string){
 	
 
 	//Request made to get the form required
-	resp,err:=http.Get(user_credentials["url"]+":"+user_credentials["port"]+"/login")
+	resp,err:=http.Get("http://"+user_credentials["ip"]+":"+user_credentials["port"]+"/login")
 	
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
@@ -179,21 +182,27 @@ func Login() (bool,string){
 	}
 
 	// Find the hidden field with the name "csrf_token"
-	csrfToken := doc.Find("input[name=csrf_token]").First().AttrOr("value", "")
+	csrfToken := doc.Find("input[name=csrf]").First().AttrOr("value", "")
 	if csrfToken == "" {
 		fmt.Println("CSRF token not found")
-		return true,"\nserver side error!\n" // server side error!
+		return true,"\nserver sstringide error!\n" // server side error!
 	}
 
 	//Preparing the body of the POST request, which is nothing but form data being sent using appropriate header
 	data.Add("username", string(user_credentials["username"]))
 	data.Add("password", string(user_credentials["password"])) //To be retrieved 
-	data.Add("csrf_token",csrfToken)
+	data.Add("csrf",csrfToken)
 
-	req,err:= http.NewRequest("POST",user_credentials["url"]+":"+user_credentials["port"]+"/login",strings.NewReader(data.Encode()))
+	cookie := &http.Cookie{
+        Name:   "csrftoken",
+        Value:  csrfToken,
+        MaxAge: 300,
+    }
+	req,err:= http.NewRequest("POST","http://"+user_credentials["ip"]+":"+user_credentials["port"]+"/login",strings.NewReader(data.Encode()))
 	if err!=nil{
 		return true,"\nServer not responding!\n" //server not responding !
 	}
+	req.AddCookie(cookie)
 	//The header is set to this to recognise that the body of the request is holding form data
 	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
 	
@@ -211,11 +220,11 @@ func Login() (bool,string){
 	if status==498{
 		check,str:=Login()
 		if check!=false{
-			fmt.Println(str)
+			fmt.Println(string(colorRed),str,string(colorReset))
 			return true,""
 		}
 	}else{
-		fmt.Println(str)
+		fmt.Println(string(colorRed),str,string(colorReset))
 		return true,""
 	}
 	//The JWT token
@@ -223,8 +232,7 @@ func Login() (bool,string){
 	splitToken:=strings.Split(JWT, "Bearer ")
 	tokenString:=splitToken[1]
 	os.Setenv("JWT",tokenString)
-
-		
+	
 
 
 //Login completed
