@@ -16,7 +16,7 @@ func Handle_resp_err(httpResponse *http.Response) (int,string){
 
 	if httpResponse.StatusCode == 403{ // wrong password
 
-		return 403,"\nWrong password!\tPlease update your password by running config edit\n"
+		return 403,"\nWrong password!\tPlease update your password by running change config\n"
 	}else if httpResponse.StatusCode == 404{
 
 		return 404,"User doesn't exist!\nPlease create account by running \"setup\"or update your credentials by running \"change config\""
@@ -28,7 +28,7 @@ func Handle_resp_err(httpResponse *http.Response) (int,string){
 	return 401,"\nLogin session expired!\t Please login again!\n"
 
 }else if httpResponse.StatusCode == 409{
-	return 401,"\nUser already exists!"
+	return 409,"\nUser already exists!"
 }else if httpResponse.StatusCode == 400{
 	return 400,"\nSomething went wrong on your side!"
 }else{

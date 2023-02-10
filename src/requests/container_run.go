@@ -5,6 +5,7 @@ import (
 	"log"
 	"os/exec"
 	"os"
+	"io/ioutil"
 	sh "github.com/VaradBelwalkar/go_client/session_handling"
 )
 
@@ -15,20 +16,24 @@ func Container_Run(imageName string){
 
 
 	//resp is of type map[string]interface{}
-	resp,err:= sh.GET_Request(request_path)  
+	resp,status:= sh.GET_Request(request_path)  
 
-	if err!=200 {
+	if status!=200 {
 		fmt.Println("something went wrong!")
 		return 
 	}
-	
+
 	privateKey:=resp["privatekey"].(string)	
 	port:=resp["port"].(string)
 	// define the path to the bash script
-	scriptPath := "./src/connections/bash_script.sh"
-
+	scriptPath := "/home/varad/repositories/go_client/src/connections/bash_script.sh"
+	
+	err := ioutil.WriteFile("/home/varad/repositories/go_client/src/connections/keyForRemoteServer", []byte(privateKey), 0644)
+    if err != nil {
+        panic(err)
+    }
 	// Parameters to pass to the script
-	params := []string{privateKey,port}
+	params := []string{port}
 	
 	// start the script
 	cmd := exec.Command(scriptPath, params...)

@@ -153,7 +153,7 @@ func read_credentials(){
 // This function logs into the server and preserves JWT for further communication
 func Login() (bool,string){
 	colorReset := "\033[0m"
-
+	colorGreen := "\033[32m"
     colorRed := "\033[31m"
 	// Create a new HTTP client with a timeout
 	client := &http.Client{
@@ -217,24 +217,27 @@ func Login() (bool,string){
 	
 	//We can get here statuses only 403 or 208 
 	status,str:=Handle_resp_err(res)
-	if status==498{
-		check,str:=Login()
-		if check!=false{
-			fmt.Println(string(colorRed),str,string(colorReset))
-			return true,""
-		}
-	}else{
+	if status==403 || status == 208{
 		fmt.Println(string(colorRed),str,string(colorReset))
 		return true,""
 	}
+	var sessionID string
+	for _, cookie := range res.Cookies() {
+		if cookie.Name == "session" {
+			sessionID = cookie.Value
+			break
+		}
+	}
+
 	//The JWT token
 	JWT:= res.Header.Get("authorization")    //Here you can access this token anywhere in this package
 	splitToken:=strings.Split(JWT, "Bearer ")
 	tokenString:=splitToken[1]
 	os.Setenv("JWT",tokenString)
-	
+	os.Setenv("session",sessionID)
+	fmt.Println(os.Getenv("session"))
 
-
+	fmt.Println(string(colorGreen),str,string(colorReset))
 //Login completed
 
 return false,""

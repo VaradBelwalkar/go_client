@@ -53,6 +53,20 @@ func GET_Request(request_path string) (map[string]interface{},int) {
 	}
 	JWT:=os.Getenv("JWT")
 
+	_, ok = os.LookupEnv("session")
+	if ok==false{
+		check,str:=Login()
+		if check!=false{
+			fmt.Println(str)
+			return nil,502
+		}
+	}
+  	cookieValue:=os.Getenv("session")
+	cookie := &http.Cookie{
+        Name:   "session",
+        Value:  cookieValue,
+        MaxAge: 300,
+    }
 	credHolder,err:=Show_Credentials()
 	if err!=nil{
 		fmt.Println(err)
@@ -62,32 +76,34 @@ func GET_Request(request_path string) (map[string]interface{},int) {
 	req, err := http.NewRequest("GET","http://"+credHolder["ip"]+":"+credHolder["port"]+request_path,nil)
 	client:=&http.Client{}
 	req.Header.Set("Authorization","Bearer "+JWT) // JWT must be available
+	req.AddCookie(cookie)
 
 	res, err := client.Do(req)
 	if err != nil {
+		fmt.Println("Error while receiving response")
 		fmt.Println(err)
 		return nil,500
 	}
 	defer res.Body.Close()
 
-	status,str:=Handle_resp_err(res)
-	if status==401{
+	status,_:=Handle_resp_err(res)
+	if status!=200{
+		if status == 401{
+		fmt.Println("Unauthorized")
 		check,str:=Login()
 		if check!=false{
 			fmt.Println(str)
 			return nil,404
+		}}	else {
+			return nil, status
 		}
-	}else{
-		fmt.Println(str)
-		return nil,500
-	}
+	}	
 
 	// Read the response body
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil,200
 	}
-
 	// Unmarshal the response body into a map interface 
 	var response map[string]interface{}
 	err = json.Unmarshal(resBody, &response)
@@ -135,6 +151,23 @@ func POST_Request(request_path string, data map[string]interface{}) (map[string]
 		}
 	}
 	JWT:=os.Getenv("JWT")
+
+	_, ok = os.LookupEnv("session")
+	if ok==false{
+		check,str:=Login()
+		if check!=false{
+			fmt.Println(str)
+			return nil,502
+		}
+	}
+  	cookieValue:=os.Getenv("session")
+	cookie := &http.Cookie{
+        Name:   "session",
+        Value:  cookieValue,
+        MaxAge: 300,
+    }
+
+	req.AddCookie(cookie)
 	req.Header.Set("Authorization", "Bearer "+JWT)
 
 	// Add the cookie to the request
