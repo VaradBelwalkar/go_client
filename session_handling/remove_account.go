@@ -14,6 +14,11 @@ import(
 
 
 func Remove_account() {
+	colorReset := "\033[0m"
+
+    colorRed := "\033[31m"
+    colorGreen := "\033[32m"
+    colorYellow := "\033[33m"
 	// Create a new HTTP client with a timeout
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -39,7 +44,7 @@ func Remove_account() {
 		if password == password1{
 			break;
 		}
-        fmt.Println("Your Password does not match. Please try again")
+        fmt.Println(string(colorYellow),"Your Password does not match Please try again",string(colorReset))
 		fmt.Print("Enter your password: ")
 		password, _ = reader.ReadString('\n')
 		fmt.Print("confirm your password: ")
@@ -107,17 +112,22 @@ func Remove_account() {
 	}
 	defer res.Body.Close()
 	
-	status,str:=Handle_resp_err(res)
-	if status == 200{
-		fmt.Println("Account deleted successfully!")
+	if res.StatusCode == 200{
+		fmt.Println(string(colorGreen),"Account deleted successfully!",string(colorReset))
 		return
 	}else{
-		if status == 403{
-			fmt.Println("\nWrong password!")
+		if res.StatusCode == 401{
+			fmt.Println(string(colorRed),"\nWrong password!",string(colorReset))
 			return
-		} else if status == 404{
-		fmt.Println("\nUser doesn't exist!")}
-		fmt.Println(str)
+		} else if res.StatusCode == 404{
+		fmt.Println(string(colorRed),"\nUser doesn't exist!",string(colorReset))
+		} else if res.StatusCode == 500{
+			fmt.Println(string(colorRed),"Server error!",string(colorReset))
+		} else if res.StatusCode == 412{
+			fmt.Println(string(colorRed),"CSRF Authentication failed!",string(colorReset))
+		} else if res.StatusCode == 400{
+			fmt.Println(string(colorRed),"Something went wrong on your side!",string(colorReset))
+		}
 		return
 	}
 

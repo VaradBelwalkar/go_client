@@ -9,9 +9,13 @@ import (
 	"io/ioutil"
 	//"github.com/VaradBelwalkar/go_client/main"
 )
-
+var ProjectPath string
 
 func Store_credentials(username string,password string,IP string,port string) {
+	    colorReset := "\033[0m"
+
+    colorRed := "\033[31m"
+    colorGreen := "\033[32m"
 	user_credentials:= map[string]string{
 		"username":username,
 		"password":password,
@@ -26,17 +30,18 @@ func Store_credentials(username string,password string,IP string,port string) {
 		panic(err)
 	}
 
-	f, err := os.OpenFile("/home/varad/repositories/go_client/credentials.bin", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	f, err := os.OpenFile(ProjectPath+"/credentials.bin", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil{
-		fmt.Println("Something went wrong while storing credentials!Please try again")
+		fmt.Println(string(colorRed),"Something went wrong while storing credentials!Please try again",string(colorReset))
 	}
 	defer f.Close()
 	
 	_, err = f.Write(info_in_bytes)
 	if err != nil {
+		fmt.Println(string(colorRed),"Something went wrong while storing credentials!Please try again",string(colorReset))
 		return
 	}
-	fmt.Println("Configuration stored successfully!")
+	fmt.Println(string(colorGreen),"Configuration stored successfully!",string(colorReset))
 
 
 }
@@ -44,6 +49,8 @@ func Store_credentials(username string,password string,IP string,port string) {
 
 
 func Setup(){
+	colorReset := "\033[0m"
+    colorYellow := "\033[33m"
     reader := bufio.NewReader(os.Stdin)
 	var tempUsername string
 	var username string
@@ -62,7 +69,7 @@ func Setup(){
 	username=strings.ReplaceAll(tempUsername,"\n","")
 		if username!=""{break
 		}else {
-			fmt.Println("Please enter a valid username!")
+			fmt.Println(string(colorYellow),"Please enter a valid username!",string(colorReset))
 		}
 
 	}
@@ -72,7 +79,7 @@ func Setup(){
 	password=strings.ReplaceAll(tempPassword,"\n","")
 	if password!=""{break
 		}else {
-			fmt.Println("Please enter a valid password!")
+			fmt.Println(string(colorYellow),"Please enter a valid password!",string(colorReset))
 		}
 	}
 	for{
@@ -81,7 +88,7 @@ func Setup(){
 	password1=strings.ReplaceAll(tempPassword1,"\n","")
 	if password1!=""{break
 	} else{
-		fmt.Println("Please enter valid confirmation!")
+		fmt.Println(string(colorYellow),"Please enter valid confirmation!",string(colorReset))
 	}
 
 	}
@@ -96,7 +103,7 @@ func Setup(){
 			password=strings.ReplaceAll(tempPassword,"\n","")
 			if password!=""{break
 				}else {
-					fmt.Println("Please enter a valid password!")
+					fmt.Println(string(colorYellow),"Please enter a valid password!",string(colorReset))
 				}
 			}
 			for{
@@ -105,7 +112,7 @@ func Setup(){
 			password1=strings.ReplaceAll(tempPassword1,"\n","")
 			if password1!=""{break
 			} else{
-				fmt.Println("Please enter valid confirmation!")
+				fmt.Println(string(colorYellow),"Please enter valid confirmation!",string(colorReset))
 			}
 		
 			}
@@ -117,7 +124,7 @@ func Setup(){
 		if IP!=""{
 			break
 		}	else{
-			fmt.Println("Please enter valid IP")
+			fmt.Println(string(colorYellow),"Please enter valid IP",string(colorReset))
 		}
 }	
 for{
@@ -128,7 +135,7 @@ for{
 	if port!=""{
 		break
 	}else{
-		fmt.Println("Please enter a valid port number")
+		fmt.Println(string(colorYellow),"Please enter a valid port number",string(colorReset))
 	}
 }
 	Store_credentials(username,password,IP,port)
@@ -138,11 +145,14 @@ for{
 
 
 func Show_Credentials()(map[string]string,error){
+	colorReset := "\033[0m"
+
+    colorRed := "\033[31m"
 	var user_credentials map[string]string
 	// Open the file in binary mode
-	file, err := os.Open("/home/varad/repositories/go_client/credentials.bin")
+	file, err := os.Open(ProjectPath+"/credentials.bin")
 	if err != nil {
-		fmt.Println("\t\tFile not found!\n \t\t Run `change config` to configure user credentials")
+		fmt.Println(string(colorRed),"\t\tFile not found!\n \t\t Run `change config` to configure user credentials",string(colorReset))
 		return nil,err
 	}
 	defer file.Close()
@@ -165,11 +175,14 @@ func Show_Credentials()(map[string]string,error){
 
 
 func Set_url(){
+		colorReset := "\033[0m"
+		colorYellow := "\033[33m"
+    colorRed := "\033[31m"
 	reader := bufio.NewReader(os.Stdin)
 	var tempIP string
 	var IP string
 	for{
-		fmt.Print("Enter the IP: ")
+		fmt.Print(string(colorYellow),"Enter the IP: ",string(colorReset))
 		tempIP,_=reader.ReadString('\n')
 		IP=strings.ReplaceAll(tempIP,"\n","")
 			if IP!=""{
@@ -181,9 +194,9 @@ func Set_url(){
 
 	var user_credentials map[string]string
 	// Open the file in binary mode
-	file, err := os.Open("/home/varad/repositories/go_client/credentials.bin")
+	file, err := os.Open(ProjectPath+"/credentials.bin")
 	if err != nil {
-		fmt.Println("\t\tFile not found!\n \t\t Run `change config` to configure user credentials")
+		fmt.Println(string(colorRed),"\t\tFile not found!\n \t\t Run `change config` to configure user credentials",string(colorReset))
 		return 
 	}
 	defer file.Close()
@@ -204,7 +217,9 @@ func Set_url(){
 
 
 func Set_port(){
-
+	colorReset := "\033[0m"
+	colorYellow := "\033[33m"
+    colorRed := "\033[31m"
 	reader := bufio.NewReader(os.Stdin)
 	var PORT string
 	for{
@@ -215,15 +230,15 @@ func Set_port(){
 		if PORT!=""{
 			break
 		}else{
-			fmt.Println("Please enter a valid port number")
+			fmt.Println(string(colorYellow),"Please enter a valid port number",string(colorReset))
 		}
 	}
 
 	var user_credentials map[string]string
 	// Open the file in binary mode
-	file, err := os.Open("/home/varad/repositories/go_client/credentials.bin")
+	file, err := os.Open(ProjectPath+"/credentials.bin")
 	if err != nil {
-		fmt.Println("\t\tFile not found!\n \t\t Run `change config` to configure user credentials")
+		fmt.Println(string(colorRed),"\t\tFile not found!\n \t\t Run `change config` to configure user credentials",string(colorReset))
 		return 
 	}
 	defer file.Close()

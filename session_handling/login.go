@@ -1,11 +1,9 @@
 package session_handling
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"net/url"
-	"io/ioutil"
 	"strings"
 	"net/http"
 	"time"
@@ -119,41 +117,11 @@ import (
 
 //We will assume server is going to send the JWT token through header 
 
-
-
-//stores the credentials, password as hash
-//stores username,password,url and port of the server 
-var user_credentials map[string]string
-
-func read_credentials(){
-	// Open the file in binary mode
-	file, err := os.Open("/home/varad/repositories/go_client/credentials.bin")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer file.Close()
-
-	// Read the file into a byte slice
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Parse the JSON data	
-	err = json.Unmarshal(data, &user_credentials)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-}
-
 // This function logs into the server and preserves JWT for further communication
-func Login() (bool,string){
+func Login() {
 	colorReset := "\033[0m"
 	colorGreen := "\033[32m"
+	colorYellow := "\033[33m"
     colorRed := "\033[31m"
 	// Create a new HTTP client with a timeout
 	client := &http.Client{
@@ -164,7 +132,7 @@ func Login() (bool,string){
 
 	user_credentials,err:=Show_Credentials()
 	if err!=nil{
-		fmt.Println("Please run change config to store your credentials")
+		fmt.Println(string(colorYellow),"Please run change config to store your credentials",string(colorReset))
 	}
 	//Do whenever submitting form data
 	data := url.Values{}
@@ -177,15 +145,14 @@ func Login() (bool,string){
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		fmt.Println("something went wrong")
-		os.Exit(0)
+		fmt.Println(string(colorRed),"something went wrong",string(colorReset))
 	}
 
 	// Find the hidden field with the name "csrf_token"
 	csrfToken := doc.Find("input[name=csrf]").First().AttrOr("value", "")
 	if csrfToken == "" {
 		fmt.Println("CSRF token not found")
-		return true,"\nserver sstringide error!\n" // server side error!
+		return 
 	}
 
 	//Preparing the body of the POST request, which is nothing but form data being sent using appropriate header
@@ -200,7 +167,7 @@ func Login() (bool,string){
     }
 	req,err:= http.NewRequest("POST","http://"+user_credentials["ip"]+":"+user_credentials["port"]+"/login",strings.NewReader(data.Encode()))
 	if err!=nil{
-		return true,"\nServer not responding!\n" //server not responding !
+		return 
 	}
 	req.AddCookie(cookie)
 	//The header is set to this to recognise that the body of the request is holding form data
@@ -210,17 +177,21 @@ func Login() (bool,string){
 	//the response object will contain the JWT token
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return true,"\nSomething went wrong!\n"
+		fmt.Println(string(colorRed),"Something went wrong!",string(colorReset))
+		return 
 	}
 	defer res.Body.Close()
 	
 	//We can get here statuses only 403 or 208 
-	status,str:=Handle_resp_err(res)
-	if status==403 || status == 208{
-		fmt.Println(string(colorRed),str,string(colorReset))
-		return true,""
-	}
+	if res.StatusCode!=200{
+	if res.StatusCode==401 {
+		fmt.Println(string(colorRed),"Wrong username or password!",string(colorReset))
+		return
+	} else if res.StatusCode == 404{
+		fmt.Println(string(colorRed),"User doesn't exist!\n",string(colorReset),string(colorYellow),"Please correct your username or if not registered, please register first",string(colorReset))
+		return 
+	}}
+
 	var sessionID string
 	for _, cookie := range res.Cookies() {
 		if cookie.Name == "session" {
@@ -235,12 +206,10 @@ func Login() (bool,string){
 	tokenString:=splitToken[1]
 	os.Setenv("JWT",tokenString)
 	os.Setenv("session",sessionID)
-	fmt.Println(os.Getenv("session"))
-
-	fmt.Println(string(colorGreen),str,string(colorReset))
+	fmt.Println(string(colorGreen),"Login Completed!",string(colorReset))
 //Login completed
 
-return false,""
+return 
 
 }
 

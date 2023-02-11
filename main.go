@@ -6,6 +6,7 @@ import (
     "os"
 	"os/exec"
     "strings"
+    "path/filepath"
     //"github.com/VaradBelwalkar/help"
     //"github.com/VaradBelwalkar/session_handling"
 	//
@@ -18,6 +19,9 @@ import (
 
 
 func main() {
+    temp,_:=filepath.Abs(os.Args[0])
+    sh.ProjectPath=filepath.Dir(temp)
+
     colorReset := "\033[0m"
 
     colorRed := "\033[31m"
@@ -79,6 +83,32 @@ func main() {
 			cmd.Stdout = os.Stdout
 			cmd.Run()
             h.Help()
+        
+        case "upload":
+            if len(words)>=5{
+                switch words[1]{
+                case "file":                // upload file /some/path containerName
+                    rq.Uploads("file",words[2],words[3],words[4])
+                case "folder":
+                    rq.Uploads("folder",words[2],words[3],words[4])
+                default: 
+                    fmt.Println(string(colorYellow),"Invalid options!",string(colorReset))
+                }
+            }
+
+        case "download":
+            if len(words)>=5{
+                switch words[1]{
+                case "file":                // upload file /some/path containerName
+                    rq.Downloads("file",words[2],words[3],words[4])
+                case "folder":
+                    rq.Downloads("folder",words[2],words[3],words[4])
+                default: 
+                    fmt.Println(string(colorYellow),"Invalid options!",string(colorReset))
+                }
+            }
+
+
 		case "container":
             if len(words)>=2{
 			switch words[1] {
@@ -90,7 +120,7 @@ func main() {
 						//Run appropriate function
                     rq.Container_List()
 					} else{
-                        fmt.Println("No such thing")
+                        fmt.Println(string(colorYellow),"No such thing",string(colorReset))
                     }}
 
                 case "run":
@@ -109,22 +139,17 @@ func main() {
                     default:
                         fmt.Println("dyplug: "+"'"+words[1]+"'"+" is not a command\n See'help'")
                 }}
-        case "set":
-            switch words[1]{
-            case "url":
-                // Call apropriate method here
-                sh.Set_url()
-
-            case "port":
-                sh.Set_port()
-            }
-
 
         case "change":
             switch words[1]{
             case "config":
                 sh.Setup()
-
+            
+            case "ip":
+                sh.Set_url()
+            
+            case "port":
+                sh.Set_port()
             default:
                 fmt.Println(string(colorRed),"Unknown Command, try running help",string(colorReset))
             }
@@ -132,7 +157,7 @@ func main() {
             //Print configuration here
             resp,err:=sh.Show_Credentials()
             if err!=nil{
-                fmt.Println("No data found!Please fill up the data by running change config")
+                fmt.Println(string(colorYellow),"No data found!Please fill up the data by running change config",string(colorReset))
                 continue
             }
             for k,v:=range resp{
@@ -140,8 +165,6 @@ func main() {
                 fmt.Println(v)
             }
 			
-		case "upload":
-			switch words[1] {}
         default:
             if len(input)==0{
 

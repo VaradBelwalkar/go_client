@@ -47,7 +47,7 @@ func Register() {
 		if password == password1{
 			break;
 		}
-        fmt.Println("Your Password does not match. Please try again")
+        fmt.Println(string(colorRed),"Your Password does not match. Please try again",string(colorReset))
 		fmt.Print(" Enter your password: ")
 		tempPassword, _ = reader.ReadString('\n')
 		password=strings.ReplaceAll(tempPassword,"\n","")
@@ -136,7 +136,14 @@ func Register() {
 											  //    it already exists
 		fmt.Println(string(colorRed),"The username already exists! Please choose another username", string(colorReset))
 
-	} else {
+	} else if res.StatusCode == 400{ 
+		fmt.Println(string(colorRed),"Something went wrong on your side!", string(colorReset))
+		
+	} else if res.StatusCode == 500 {
+		fmt.Println(string(colorRed),"Something went wrong on server side!", string(colorReset))
+	} else if res.StatusCode == 412 {
+		fmt.Println(string(colorRed),"CSRF Authentication Failed!", string(colorReset)) 		// http.StatusPreconditionFailed
+	}else {
 		fmt.Println("something went wrong!")
 	}
 

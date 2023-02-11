@@ -42,24 +42,20 @@ import (
 // Standerdized and returns type of map[string]interface{}
 // To be used after successful login and JWT retrieval
 func GET_Request(request_path string) (map[string]interface{},int) {
+    colorReset := "\033[0m"
 
+    colorRed := "\033[31m"
 	_, ok := os.LookupEnv("JWT")
 	if ok==false{
-		check,str:=Login()
-		if check!=false{
-			fmt.Println(str)
+			fmt.Println(string(colorRed),"Please login",string(colorReset))
 			return nil,502
-		}
 	}
 	JWT:=os.Getenv("JWT")
 
 	_, ok = os.LookupEnv("session")
 	if ok==false{
-		check,str:=Login()
-		if check!=false{
-			fmt.Println(str)
-			return nil,502
-		}
+		fmt.Println(string(colorRed),"Please login",string(colorReset))
+		return nil,502	
 	}
   	cookieValue:=os.Getenv("session")
 	cookie := &http.Cookie{
@@ -69,8 +65,8 @@ func GET_Request(request_path string) (map[string]interface{},int) {
     }
 	credHolder,err:=Show_Credentials()
 	if err!=nil{
-		fmt.Println(err)
-		return nil,404
+		fmt.Println(string(colorRed),"Something went wrong while reading credentials file!",string(colorReset))
+		return nil,502
 	}
 
 	req, err := http.NewRequest("GET","http://"+credHolder["ip"]+":"+credHolder["port"]+request_path,nil)
@@ -80,36 +76,30 @@ func GET_Request(request_path string) (map[string]interface{},int) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error while receiving response")
-		fmt.Println(err)
+		fmt.Println(string(colorRed),"Error while receiving response",string(colorReset))
 		return nil,500
 	}
 	defer res.Body.Close()
 
-	status,_:=Handle_resp_err(res)
-	if status!=200{
-		if status == 401{
-		fmt.Println("Unauthorized")
-		check,str:=Login()
-		if check!=false{
-			fmt.Println(str)
-			return nil,404
-		}}	else {
-			return nil, status
+	if res.StatusCode!=200{
+		if res.StatusCode == 401{
+		fmt.Println(string(colorRed),"Please login again!",string(colorReset))
+		return nil,401
+		}	else {
+			return nil, res.StatusCode
 		}
 	}	
 
 	// Read the response body
 	resBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil,200
+		return nil,504 	//response body isn't there
 	}
 	// Unmarshal the response body into a map interface 
 	var response map[string]interface{}
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
-		fmt.Println(err)
-		return nil,500
+		return nil,505   // body is there but cannot unmarshal it
 	}
 	return response,200
 
@@ -117,19 +107,21 @@ func GET_Request(request_path string) (map[string]interface{},int) {
 
 
 
-
 // To be used after successful login and JWT retrieval
 func POST_Request(request_path string, data map[string]interface{}) (map[string]interface{},int) {
+	colorReset := "\033[0m"
+
+    colorRed := "\033[31m"
 	b, err := json.Marshal(data)
 	client:=&http.Client{}
 	if err != nil {
-		fmt.Println("something went wrong")
+		fmt.Println(string(colorRed),"something went wrong",string(colorReset))
 	}
 	//Change URL here
 
 	credHolder,err:=Show_Credentials()
 	if err!=nil{
-		fmt.Println(err)
+		fmt.Println(string(colorRed),"Something went wrong while reading credentials file!",string(colorReset))
 		return nil,502
 	}
 
@@ -144,21 +136,15 @@ func POST_Request(request_path string, data map[string]interface{}) (map[string]
 	// Add the JWT to the request header
 		_, ok := os.LookupEnv("JWT")
 	if ok==false{
-		check,str:=Login()
-		if check!=false{
-			fmt.Println(str)
-			return nil,502
-		}
+		fmt.Println(string(colorRed),"Please login",string(colorReset))
+		return nil,502	
 	}
 	JWT:=os.Getenv("JWT")
 
 	_, ok = os.LookupEnv("session")
 	if ok==false{
-		check,str:=Login()
-		if check!=false{
-			fmt.Println(str)
-			return nil,502
-		}
+		fmt.Println(string(colorRed),"Please login",string(colorReset))
+		return nil,502	
 	}
   	cookieValue:=os.Getenv("session")
 	cookie := &http.Cookie{
@@ -176,20 +162,14 @@ func POST_Request(request_path string, data map[string]interface{}) (map[string]
 	// Send the request
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(string(colorRed),"Server not responding!",string(colorReset))
 		return nil,502
 	}
 	defer res.Body.Close()
 
-	status,str:=Handle_resp_err(res)
-	if status ==200{}else if status==401{
-		check,str:=Login()
-		if check!=false{
-			fmt.Println(str)
-			return nil,502
-		}
+	if res.StatusCode ==200{}else if res.StatusCode==401{
+		fmt.Println(string(colorRed),"Please login again!",string(colorReset))
 	}else{
-		fmt.Println(str)
 		return nil,502
 	}
 	// Read the response
@@ -202,7 +182,6 @@ func POST_Request(request_path string, data map[string]interface{}) (map[string]
 	var response map[string]interface{}
 	err = json.Unmarshal(resBody, &response)
 	if err != nil {
-		fmt.Println(err)
 		return nil,500
 	}
 
