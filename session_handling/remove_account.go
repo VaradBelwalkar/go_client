@@ -33,12 +33,14 @@ func Remove_account() {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Enter the username : ")
-	username, _ := reader.ReadString('\n')
-
+	tempuserName, _ := reader.ReadString('\n')
+	username:=strings.ReplaceAll(tempuserName,"\n","")
 	fmt.Print("Enter your password: ")
-	password, _ := reader.ReadString('\n')
+	tempPassword, _ := reader.ReadString('\n')
+	password:=strings.ReplaceAll(tempPassword,"\n","")
 	fmt.Print("confirm your password: ")
-	password1, _ := reader.ReadString('\n')
+	tempPassword1, _ := reader.ReadString('\n')
+	password1:=strings.ReplaceAll(tempPassword1,"\n","")
 
     for {
 		if password == password1{
@@ -46,9 +48,11 @@ func Remove_account() {
 		}
         fmt.Println(string(colorYellow),"Your Password does not match Please try again",string(colorReset))
 		fmt.Print("Enter your password: ")
-		password, _ = reader.ReadString('\n')
+		tempPassword, _ = reader.ReadString('\n')
+		password=strings.ReplaceAll(tempPassword,"\n","")
 		fmt.Print("confirm your password: ")
-		password1, _ = reader.ReadString('\n')
+		tempPassword1, _ = reader.ReadString('\n')
+		password1=strings.ReplaceAll(tempPassword1,"\n","")
 	}
 	user_credentials,err :=Show_Credentials()
 	var tempIP,IP,tempPort,port string

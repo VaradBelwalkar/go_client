@@ -225,7 +225,7 @@ func Set_port(){
 	for{
 		fmt.Print("Enter the port: ")
 		PORT,_=reader.ReadString('\n')
-		PORT=strings.TrimSuffix(PORT, "\n")
+		PORT=strings.ReplaceAll(PORT,"\n","")
 		
 		if PORT!=""{
 			break
