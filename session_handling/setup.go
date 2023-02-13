@@ -121,6 +121,7 @@ func Setup(){
 	fmt.Print("Enter the IP: ")
 	tempIP,_=reader.ReadString('\n')
 	IP=strings.ReplaceAll(tempIP,"\n","")
+	IP=strings.ReplaceAll(IP," ","")
 		if IP!=""{
 			break
 		}	else{
@@ -131,7 +132,7 @@ for{
 	fmt.Print("Enter the port: ")
 	tempPort,_=reader.ReadString('\n')
 	port=strings.ReplaceAll(tempPort,"\n","")
-	
+	port=strings.ReplaceAll(port," ","")
 	if port!=""{
 		break
 	}else{

@@ -8,17 +8,22 @@ import (
 	"strings"
 	sh "github.com/VaradBelwalkar/go_client/session_handling"
 )
-func Downloads(fileOrFolder string,containerPath string,userPath,containerName string){
+func Downloads(fileOrFolder string,containerPath string,localPath,containerName string){
 	colorReset := "\033[0m"
     colorYellow := "\033[33m"
 	user_credentials,err:=sh.Show_Credentials()
 	if err!=nil{
 		fmt.Println(string(colorYellow),"Please run change config to store your credentials",string(colorReset))
 	}
-	scriptPath := sh.ProjectPath+"/connections/download_script.sh"
+
 	parts := strings.Split(containerName, "_")
 	port := parts[1]
-	cmd := exec.Command(scriptPath,fileOrFolder,containerPath,userPath,port,user_credentials["ip"],sh.ProjectPath+"/connections/keyForRemoteServer")
+	cmd := exec.Command("scp","-i",sh.ProjectPath+"/keyForRemoteServer","-P",port,"root@"+user_credentials["ip"]+":"+containerPath,localPath)
+	if fileOrFolder == "file"{
+	
+	} else if fileOrFolder == "folder"{
+		cmd = exec.Command("scp","-i",sh.ProjectPath+"/keyForRemoteServer","-P",port,"root@"+user_credentials["ip"]+":"+containerPath,localPath)
+	}
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

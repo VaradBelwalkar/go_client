@@ -59,14 +59,17 @@ func Register() {
 	fmt.Print("Enter the server IP: ")
 	tempIP,_:=reader.ReadString('\n')
 	IP:=strings.ReplaceAll(tempIP,"\n","")
+	IP=strings.ReplaceAll(IP," ","")
 	fmt.Print("Enter the port: ")
 	tempPort,_:=reader.ReadString('\n')
 	port:=strings.ReplaceAll(tempPort,"\n","")
+	port=strings.ReplaceAll(port," ","")
 	//Request made to get the form required	
 	urlString:=	"http://"+strings.ReplaceAll(IP, " ", "")+":"+strings.ReplaceAll(port, " ", "")+"/register"
 	res,err:=http.Get(urlString)
 	if err!=nil{
-		fmt.Println(err)
+		fmt.Println(string(colorRed),"Something went wrong,\n Check ip address or port if configured correctly else might be server issue!",string(colorReset))
+		return
 	}
 	
 	doc, err := goquery.NewDocumentFromReader(res.Body)
@@ -135,16 +138,21 @@ func Register() {
 	} else if res.StatusCode == 409 {  //    409 StatusCode indicates a "Conflit" that server cannot create a resource because
 											  //    it already exists
 		fmt.Println(string(colorRed),"The username already exists! Please choose another username", string(colorReset))
+		return
 
 	} else if res.StatusCode == 400{ 
 		fmt.Println(string(colorRed),"Something went wrong on your side!", string(colorReset))
+		return
 		
 	} else if res.StatusCode == 500 {
 		fmt.Println(string(colorRed),"Something went wrong on server side!", string(colorReset))
+		return
 	} else if res.StatusCode == 412 {
 		fmt.Println(string(colorRed),"CSRF Authentication Failed!", string(colorReset)) 		// http.StatusPreconditionFailed
+		return
 	}else {
 		fmt.Println("something went wrong!")
+		return
 	}
 
 

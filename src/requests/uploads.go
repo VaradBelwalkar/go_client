@@ -15,10 +15,16 @@ func Uploads(fileOrFolder string,localPath string,containerPath,containerName st
 	if err!=nil{
 		fmt.Println(string(colorYellow),"Please run change config to store your credentials",string(colorReset))
 	}
-	scriptPath := sh.ProjectPath+"/connections/upload_script.sh"
+	
 	parts := strings.Split(containerName, "_")
 	port := parts[1]
-	cmd := exec.Command(scriptPath,fileOrFolder,localPath,containerPath,port,user_credentials["ip"],sh.ProjectPath+"/connections/keyForRemoteServer")
+	cmd := exec.Command("scp","-i",sh.ProjectPath+"/keyForRemoteServer","-P",port,localPath,"root@"+user_credentials["ip"]+":"+containerPath)
+	if fileOrFolder == "file"{
+	
+	}else if fileOrFolder == "folder"{
+		cmd = exec.Command("scp","-r","-i",sh.ProjectPath+"/keyForRemoteServer","-P",port,localPath,"root@"+user_credentials["ip"]+":"+containerPath)
+	}
+
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

@@ -51,7 +51,7 @@ func main() {
 
         // Strip leading and trailing whitespace from the input
         input = strings.TrimSpace(input)
-
+        input = strings.Join(strings.Fields(input), " ")
         // Split the input into separate words
         words := strings.Split(input, " ")
 

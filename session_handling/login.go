@@ -133,6 +133,7 @@ func Login() {
 	user_credentials,err:=Show_Credentials()
 	if err!=nil{
 		fmt.Println(string(colorYellow),"Please run change config to store your credentials",string(colorReset))
+		return
 	}
 	//Do whenever submitting form data
 	data := url.Values{}
@@ -141,11 +142,17 @@ func Login() {
 
 	//Request made to get the form required
 	resp,err:=http.Get("http://"+user_credentials["ip"]+":"+user_credentials["port"]+"/login")
+	if err!=nil{
+		fmt.Println(string(colorRed),"Something went wrong,\n Check ip address or port if configured correctly else might be server issue!",string(colorReset))
+		return
+	}
+	defer resp.Body.Close()
 	
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		fmt.Println(string(colorRed),"something went wrong",string(colorReset))
+		return
 	}
 
 	// Find the hidden field with the name "csrf_token"
