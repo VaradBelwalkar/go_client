@@ -11,7 +11,7 @@ import (
 )
 
 
-func Container_Run(imageName string){
+func Container_Run(imageName string,browser bool ){
 	reader := bufio.NewReader(os.Stdin)
     colorReset := "\033[0m"
 	colorGreen := "\033[32m"
@@ -62,6 +62,9 @@ func Container_Run(imageName string){
 	fmt.Print("\nPress Enter when done:")
 	_,_=reader.ReadString('\n')
 	cmd := exec.Command("ssh","-i",sh.ProjectPath+"/keyForRemoteServer","-p",port,"root@"+user_credentials["ip"])
+	if browser == true{
+		cmd = exec.Command("google-chrome", "--new-tab", "127.0.0.1:8888")
+	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

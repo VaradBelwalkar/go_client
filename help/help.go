@@ -45,7 +45,7 @@ dyplug COMMANDS TO ACCESS RUNTIMES
   (You can own maximum of 5 containers at a time)
 
 
-       dyplug > container run <runtime_name> 
+       dyplug > container run <runtime_name> <port_to_expose(optional)>
              
               get a new specifed container
 
@@ -68,6 +68,7 @@ dyplug COMMANDS TO ACCESS RUNTIMES
        dyplug > container remove <container_name>
 
               remove the specified container from the server
+
 
 `
 

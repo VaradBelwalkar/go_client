@@ -1,7 +1,6 @@
 package requests
 
 import (
-	"log"
 	"fmt"
 	"os/exec"
 	"os"
@@ -11,6 +10,7 @@ import (
 func Downloads(fileOrFolder string,containerPath string,localPath,containerName string){
 	colorReset := "\033[0m"
     colorYellow := "\033[33m"
+	colorRed := "\033[31m"
 	user_credentials,err:=sh.Show_Credentials()
 	if err!=nil{
 		fmt.Println(string(colorYellow),"Please run change config to store your credentials",string(colorReset))
@@ -31,11 +31,13 @@ func Downloads(fileOrFolder string,containerPath string,localPath,containerName 
 	// start the script and wait for it to finish
 	if err := cmd.Start(); err != nil {
 		// handle error
-		log.Fatal(err)
+		fmt.Println(string(colorRed),"Something went wrong,\n Check ip address or port if configured correctly else might be server issue!",string(colorReset))
+		return
 	}
 	if err := cmd.Wait(); err != nil {
 		// handle error
-		log.Fatal(err)
+		fmt.Println(string(colorRed),"Something went wrong,\n Check ip address or port if configured correctly else might be server issue!",string(colorReset))
+		return
 	}
 
 }

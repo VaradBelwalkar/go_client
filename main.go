@@ -53,7 +53,19 @@ func main() {
         input = strings.TrimSpace(input)
         input = strings.Join(strings.Fields(input), " ")
         // Split the input into separate words
-        words := strings.Split(input, " ")
+        tempWords := strings.Split(input, " ")
+        
+        browser:=false
+
+        var words []string
+        for _, word := range tempWords {
+            if !strings.HasPrefix(word, "-") {
+                words = append(words, word)
+            }else if word == "-online"{
+                browser=true
+            }
+        }
+    
 
         // Check the first word to see which command the user entered
         switch words[0] {
@@ -124,8 +136,11 @@ func main() {
                     }}
 
                 case "run":
-                    if len(words)>=3{
-                    rq.Container_Run(words[2])}else{fmt.Println(string(colorYellow),"Pass the name of the image you want", string(colorReset))}
+                    if len(words)==3{
+                    rq.Container_Run(words[2],browser)
+                }else if len(words) == 4{
+                    rq.Container_Run(words[2],browser) 
+                    } else{fmt.Println(string(colorYellow),"Pass the name of the image you want", string(colorReset))}
 
                 case "start":if len(words)>=3{
                     rq.Container_Start(words[2])}else{fmt.Println(string(colorYellow),"Pass the name of the container you want to start", string(colorReset))}
