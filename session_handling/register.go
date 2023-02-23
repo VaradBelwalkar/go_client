@@ -55,6 +55,10 @@ func Register() {
 		tempPassword1, _ = reader.ReadString('\n')
 		password1=strings.ReplaceAll(tempPassword1,"\n","")
 	}
+	fmt.Print("Enter the email ID: ")
+	tempEMAIL,_:=reader.ReadString('\n')
+	EMAIL:=strings.ReplaceAll(tempEMAIL,"\n","")
+	EMAIL=strings.ReplaceAll(EMAIL," ","")
 
 	fmt.Print("Enter the server IP: ")
 	tempIP,_:=reader.ReadString('\n')
@@ -88,6 +92,7 @@ func Register() {
 	//Preparing the body of the POST request, which is nothing but form data being sent using appropriate header
 	data.Add("username", username)
 	data.Add("password", password) 
+	data.Add("email", EMAIL) 
 	data.Add("csrf",csrfToken)
 
 

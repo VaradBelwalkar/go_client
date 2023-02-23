@@ -213,6 +213,7 @@ func Login() {
 	tokenString:=splitToken[1]
 	os.Setenv("JWT",tokenString)
 	os.Setenv("session",sessionID)
+	fmt.Println(sessionID)
 	Verify_OTP()
 	
 //Login completed
@@ -288,7 +289,7 @@ func Verify_OTP(){
 		return 
 	}
 
-	fmt.Println(string(colorYellow),"Please enter the OTP sent to your registered EMAIL ID: ",string(colorReset))
+	fmt.Print(string(colorYellow),"Please enter the OTP sent to your registered EMAIL ID: ",string(colorReset))
 	tempOTP,_:=reader.ReadString('\n')
 	OTP:=strings.ReplaceAll(tempOTP,"\n","")
 	OTP=strings.ReplaceAll(OTP," ","")
@@ -296,16 +297,23 @@ func Verify_OTP(){
 	data.Add("otp", OTP)
 	data.Add("csrf",csrfToken)
 
-	cookie = &http.Cookie{
+	csrfCookie := &http.Cookie{
         Name:   "csrftoken",
         Value:  csrfToken,
-        MaxAge: 300,
+        MaxAge: 30000,
+    }
+	sessionCookie:=&http.Cookie{
+        Name:   "session",
+        Value:  cookieValue,
+        MaxAge: 30000,
     }
 	req,err= http.NewRequest("POST","http://"+user_credentials["ip"]+":"+user_credentials["port"]+"/otphandler",strings.NewReader(data.Encode()))
 	if err!=nil{
 		return 
 	}
-	req.AddCookie(cookie)
+	req.AddCookie(csrfCookie)
+	req.AddCookie(sessionCookie)
+	req.Header.Set("Authorization","Bearer "+JWT)
 	//The header is set to this to recognise that the body of the request is holding form data
 	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
 	
