@@ -213,7 +213,6 @@ func Login() {
 	tokenString:=splitToken[1]
 	os.Setenv("JWT",tokenString)
 	os.Setenv("session",sessionID)
-	fmt.Println(sessionID)
 	Verify_OTP()
 	
 //Login completed
