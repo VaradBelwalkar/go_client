@@ -224,6 +224,7 @@ return
 
 
 func Verify_OTP(){
+	run_again:
     colorReset := "\033[0m"
 	colorYellow := "\033[33m"
     colorRed := "\033[31m"
@@ -328,8 +329,8 @@ func Verify_OTP(){
 	//We can get here statuses only 403 or 208 
 	if res.StatusCode!=200{
 	if res.StatusCode==401 {
-		fmt.Println(string(colorRed),"Wrong username or password!",string(colorReset))
-		return
+		fmt.Println(string(colorRed),"Wrong OTP!",string(colorReset))
+		goto run_again
 	} else if res.StatusCode == 404{
 		fmt.Println(string(colorRed),"User doesn't exist!\n",string(colorReset),string(colorYellow),"Please correct your username or if not registered, please register first",string(colorReset))
 		return 
