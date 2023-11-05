@@ -11,7 +11,7 @@ import (
 )
 
 
-func Container_Start(imageName string){
+func Container_Start(imageName string,browser bool,given_port string){
 	reader := bufio.NewReader(os.Stdin)
     colorReset := "\033[0m"
 	colorGreen := "\033[32m"
@@ -38,30 +38,42 @@ func Container_Start(imageName string){
 			return
 		}
 	}
-	user_credentials,err:=sh.Show_Credentials()
-	if err!=nil{
-		fmt.Println(string(colorYellow),"Please run change config to store your credentials",string(colorReset))
-	}
+	
 	privateKey:=resp["privatekey"].(string)	
-	port:=resp["port"].(string)
+	container_ip:=resp["container_ip"].(string)
 	 //define the path to the bash script
 	
-	err = ioutil.WriteFile(sh.ProjectPath+"/keyForRemoteServer", []byte(privateKey), 0600)
+	err := ioutil.WriteFile(sh.ProjectPath+"/keyForRemoteServer", []byte(privateKey), 0600)
     if err != nil {
         fmt.Println(string(colorRed),"Something went wrong while storing PrivateKey",string(colorReset))
 		return
     }
 	// Parameters to pass to the script
 	fmt.Println(string(colorBlue),"Copy the following line in your VSCode to get development environment:\n",string(colorReset))
-	fmt.Println(string(colorGreen),"ssh "+"-i "+sh.ProjectPath+"/keyForRemoteServer "+"-p "+port+" root@"+user_credentials["ip"],string(colorReset))
+	fmt.Println(string(colorGreen),"ssh "+"-i "+sh.ProjectPath+"/keyForRemoteServer "+" root@"+container_ip,string(colorReset))
 	fmt.Println(string(colorBlue),"\nPress Enter when done:",string(colorReset))
 	_,_=reader.ReadString('\n')
 	// start the script
-	cmd := exec.Command("ssh","-i",sh.ProjectPath+"/keyForRemoteServer","-p",port,"root@"+user_credentials["ip"])
+	cmd := exec.Command("ssh","-i",sh.ProjectPath+"/keyForRemoteServer","root@"+container_ip)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	
+	if browser == true{
+		browser_cmd := exec.Command("google-chrome", "--new-tab",container_ip+":"+given_port)
+		browser_cmd.Stdin = os.Stdin
+		browser_cmd.Stdout = os.Stdout
+		browser_cmd.Stderr = os.Stderr
+		
+		// start the script and wait for it to finish
+		if err := browser_cmd.Start(); err != nil {
+			// handle error
+			log.Fatal(err)
+		}
+		if err := browser_cmd.Wait(); err != nil {
+			// handle error
+			log.Fatal(err)
+		}
+	}
 	// start the script and wait for it to finish
 	if err := cmd.Start(); err != nil {
 		// handle error

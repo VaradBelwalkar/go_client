@@ -137,13 +137,16 @@ func main() {
 
                 case "run":
                     if len(words)==3{
-                    rq.Container_Run(words[2],browser)
+                    rq.Container_Run(words[2],browser,"")
                 }else if len(words) == 4{
-                    rq.Container_Run(words[2],browser) 
+                    rq.Container_Run(words[2],browser,words[3]) 
                     } else{fmt.Println(string(colorYellow),"Pass the name of the image you want", string(colorReset))}
 
                 case "start":if len(words)>=3{
-                    rq.Container_Start(words[2])}else{fmt.Println(string(colorYellow),"Pass the name of the container you want to start", string(colorReset))}
+                    rq.Container_Start(words[2],browser,"")
+                } else if len(words) ==4{
+                    rq.Container_Start(words[2],browser,words[3])   
+                }else{fmt.Println(string(colorYellow),"Pass the name of the container you want to start", string(colorReset))}
                 case "stop":
                     if len(words)>=3{
                     rq.Container_stop(words[2])}else{fmt.Println(string(colorYellow),"Pass the name of the container you want to stop", string(colorReset))}
